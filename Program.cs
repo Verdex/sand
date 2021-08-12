@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 
 namespace sand
 {
@@ -6,7 +7,6 @@ namespace sand
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
         }
     }
 }
