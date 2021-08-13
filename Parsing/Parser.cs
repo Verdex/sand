@@ -7,10 +7,17 @@ using static sand.Util.ResultEx;
 namespace sand.Parsing {
     public static class ParserEx {
         public static Parser<B> Select<A, B>(this Parser<A> target, Func<A, B> map)  
-            => new Parser<B>( input => target.Parse(input) switch {
-                Ok<A> o => Ok(map(o.Item)),
-                Err<A> e => Err<B>(e.Error),
-                _ => throw new Exception("Select unexpected Result Case"),
+            => new Parser<B>( input => {
+                var rp = input.CreateRestore();
+                switch (target.Parse(input)) {
+                    case Ok<A> o: 
+                        return Ok(map(o.Item));
+                    case Err<A> e: 
+                        input.Restore(rp);
+                        return Err<B>(e.Error);
+                    default: 
+                        throw new Exception("Select unexpected Result Case");
+                }
             } );
 
         public static Parser<R> SelectMany<A, B, R>(this Parser<A> target, Func<A, Parser<B>> next, Func<A, B, R> final)  
