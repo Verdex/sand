@@ -1,6 +1,4 @@
 namespace sand.Util {
-    public interface Error { }
-
     public interface Result<T> { }
 
     public class Ok<T> : Result<T> {
