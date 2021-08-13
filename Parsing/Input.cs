@@ -15,7 +15,7 @@ namespace sand.Parsing {
         }
 
         public RestorePoint CreateRestore() => new RestorePoint(_index);
-        public void Retore(RestorePoint rp) {
+        public void Restore(RestorePoint rp) {
             _index = rp.index;
         }
 
