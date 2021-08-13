@@ -15,16 +15,27 @@ namespace sand.Parsing {
 
         public static Parser<R> SelectMany<A, B, R>(this Parser<A> target, Func<A, Parser<B>> next, Func<A, B, R> final)  
             => new Parser<R>( input => {
-                var result = target.Parse(input);
-                return result switch {
-                    Ok<A> o => next(o.Item).Parse(input) switch {
-                        Ok<B> ob => Ok(final( o.Item, ob.Item )),
-                        Err<B> eb => Err<R>(eb.Error),
-                        _ => throw new Exception("SelectMany unexpected Result Case"),
-                    },
-                    Err<A> e => Err<R>(e.Error),
-                    _ => throw new Exception("SelectMany unexpected Result Case"),
-                };
+                var rp1 = input.CreateRestore();
+                var result1 = target.Parse(input);
+                switch (result1) {
+                    case Ok<A> o: 
+                        var rp2 = input.CreateRestore();
+                        var result2 = next(o.Item).Parse(input);
+                        switch (result2) {
+                            case Ok<B> ob: 
+                                return Ok(final( o.Item, ob.Item ));
+                            case Err<B> eb: 
+                                input.Restore(rp2);
+                                return Err<R>(eb.Error);
+                            default: 
+                                throw new Exception("SelectMany unexpected Result Case");
+                        }
+                    case Err<A> e:
+                        input.Restore(rp1); 
+                        return Err<R>(e.Error);
+                    default:
+                        throw new Exception("SelectMany unexpected Result Case");
+                }
             } );
     }
 
