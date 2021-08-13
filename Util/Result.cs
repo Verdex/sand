@@ -19,6 +19,6 @@ namespace sand.Util {
 
     public static class ResultEx {
         public static Result<T> Ok<T>(T item) => new Ok<T>(item);
-        public static Error<T> Err<T>() => new Err<T>();
+        public static Err<T> Err<T>(Error error) => new Err<T>(error);
     }
 }
