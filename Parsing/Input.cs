@@ -4,12 +4,19 @@ using static sand.Util.OptionEx;
 using static sand.Util.ResultEx;
 
 namespace sand.Parsing {
+    public record RestorePoint(int index);
+    
     public class Input {
         private readonly string _text;
         private int _index;
         public Input(string text) {
             _text = text;
             _index = 0;
+        }
+
+        public RestorePoint CreateRestore() => new RestorePoint(_index);
+        public void Retore(RestorePoint rp) {
+            _index = rp.index;
         }
 
         public Option<char> GetChar() {
