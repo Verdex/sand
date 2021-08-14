@@ -9,6 +9,16 @@ using static sand.Util.OptionEx;
 
 namespace sand.Parsing {
     public static class ParserEx {
+        public static Parser<char> Any() 
+            => new Parser<char>(input => input.GetChar() switch {
+                Some<char> c => Ok(c.Item),
+                None<char> => Err<char>(new EndOfFileError()),
+                _ => throw new Exception("Unexpected Option case")
+            });
+
+        public static Parser<string> Expect(string s) 
+            => new Parser<string>(input => input.Expect(s));
+
         public static Parser<T> Or<T>( this Parser<T> target, Parser<T> other ) 
             => new Parser<T>( input => {
                 var rp = input.CreateRestore();
