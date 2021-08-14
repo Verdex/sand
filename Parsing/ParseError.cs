@@ -4,6 +4,10 @@ using System.Linq;
 using sand.Util;
 
 namespace sand.Parsing {
+    public class EndOfFileError : Error { 
+        public string Report() => "Encountered unexpected end of file";
+
+    }
     public class ParseError : Error {
         private readonly string _message;
         private readonly int _start;
