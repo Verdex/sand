@@ -1,11 +1,62 @@
 
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 using sand.Util;
 using static sand.Util.ResultEx;
+using static sand.Util.OptionEx;
 
 namespace sand.Parsing {
     public static class ParserEx {
+        public static Parser<T> Or<T>( this Parser<T> target, Parser<T> other ) 
+            => new Parser<T>( input => {
+                var rp = input.CreateRestore();
+                switch (target.Parse(input)) {
+                    case Ok<T> o: 
+                        return o;
+                    case Err<T> e:
+                        input.Restore(rp);
+                        return other.Parse(input); 
+                    default:
+                        throw new Exception("Or unexpected Result case");
+                }
+            } );
+
+        public static Parser<IEnumerable<T>> ZeroOrMore<T>( this Parser<T> target ) 
+            => new Parser<IEnumerable<T>>( input => {
+                var ret = new List<T>();
+                var again = true;
+                do {
+                    var rp = input.CreateRestore();
+                    switch (target.Parse(input)) {
+                        case Ok<T> o:
+                            ret.Add(o.Item);
+                            break;
+                        case Err<T> e:
+                            input.Restore(rp);
+                            again = false;
+                            break;
+                        default:
+                            throw new Exception("ZeroOrMore unexpected Result case");
+                    }
+                } while(again);
+                return Ok<IEnumerable<T>>(ret);
+            });
+            
+
+        public static Parser<IEnumerable<T>> OneoOrMore<T>( this Parser<T> target ) 
+            => from initial in target
+            from rest in target.ZeroOrMore()
+            select rest.Prepend(initial);
+
+        public static Parser<Option<T>> Maybe<T>( this Parser<T> target ) 
+            => new Parser<Option<T>>( input => target.Parse(input) switch {
+                Ok<T> o => Ok(Some(o.Item)),
+                Err<T> e => Ok(None<T>()),
+                _ => throw new Exception("Unexpected Result case"),
+            });
+
         public static Parser<B> Select<A, B>(this Parser<A> target, Func<A, B> map)  
             => new Parser<B>( input => {
                 var rp = input.CreateRestore();
