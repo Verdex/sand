@@ -39,6 +39,7 @@ namespace sand.Parsing {
             var e = _index + value.Length;
             var target = Text[s..e];
             if ( target == value ) {
+                _index += value.Length;
                 return Ok(value);
             }
             return Err<string>(new ParseError( $"Expected {value}, but found {target}."
