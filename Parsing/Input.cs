@@ -31,6 +31,10 @@ namespace sand.Parsing {
         }
 
         public Result<string> Expect(string value) {
+            if ( value.Length + _index > Text.Length ) {
+                return Err<string>(new EndOfFileError());
+            }
+
             var s = _index;
             var e = _index + value.Length;
             var target = Text[s..e];
