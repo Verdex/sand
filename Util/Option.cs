@@ -16,7 +16,7 @@ namespace sand.Util {
     public static class OptionEx {
         public static Option<T> Some<T>( T item ) => new Some<T>(item);
         public static Option<T> None<T>() => new None<T>();
-        public static Option<B> Map<A, B>(this A target, Func<A, B> f) 
+        public static Option<B> Select<A, B>(this Option<A> target, Func<A, B> f) 
             => target switch {
                 Some<A> o => Some(f(o.Item)),
                 None<A> => None<B>(),

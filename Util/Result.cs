@@ -21,7 +21,7 @@ namespace sand.Util {
     public static class ResultEx {
         public static Result<T> Ok<T>(T item) => new Ok<T>(item);
         public static Err<T> Err<T>(Error error) => new Err<T>(error);
-        public static Result<B> Map<A, B>(this A target, Func<A, B> f) 
+        public static Result<B> Select<A, B>(this Result<A> target, Func<A, B> f) 
             => target switch {
                 Ok<A> o => Ok(f(o.Item)),
                 Err<A> e => Err<B>(e.Error),
