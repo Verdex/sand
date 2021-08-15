@@ -9,6 +9,7 @@ using static sand.Util.OptionEx;
 
 namespace sand.Parsing {
     public static class ParserEx {
+
         public static Parser<char> Any() 
             => new Parser<char>(input => input.GetChar() switch {
                 Some<char> c => Ok(c.Item),
@@ -53,7 +54,6 @@ namespace sand.Parsing {
                 } while(again);
                 return Ok<IEnumerable<T>>(ret);
             });
-            
 
         public static Parser<IEnumerable<T>> OneoOrMore<T>( this Parser<T> target ) 
             => from initial in target
@@ -65,6 +65,26 @@ namespace sand.Parsing {
                 Ok<T> o => Ok(Some(o.Item)),
                 Err<T> e => Ok(None<T>()),
                 _ => throw new Exception("Unexpected Result case"),
+            });
+
+        public static Parser<T> Where<T>(this Parser<T> target, Func<T, bool> predicate) 
+            => new Parser<T>( input => {
+                var rp = input.CreateRestore();
+                switch (target.Parse(input)) {
+                    case Ok<T> o:
+                        if(predicate(o.Item)) {
+                            return Ok(o.Item);
+                        }
+                        else {
+                            input.Restore(rp);
+                            return Err<T>(new ParsePredicateError(typeof(T).ToString(), rp.index));
+                        }
+                    case Err<T> e:
+                        input.Restore(rp);
+                        return e;
+                    default: 
+                        throw new Exception("Unexpected Result case");
+                }
             });
 
         public static Parser<B> Select<A, B>(this Parser<A> target, Func<A, B> map)  
