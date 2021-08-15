@@ -4,9 +4,11 @@ using System.Linq;
 using sand.Util;
 
 namespace sand.Parsing {
+    public record ParsePredicateError(string retType, int index) : Error {
+        public string Report() => $"Parsing predicate failed for type {retType} at {index}";
+    }
     public class EndOfFileError : Error { 
         public string Report() => "Encountered unexpected end of file";
-
     }
     public class ParseError : Error {
         private readonly string _message;
