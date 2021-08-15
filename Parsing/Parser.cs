@@ -76,8 +76,13 @@ namespace sand.Parsing {
                             return Ok(o.Item);
                         }
                         else {
+                            var e = Err<T>(new ParseError( $"Parsing predicate failed for type {typeof(T).ToString()}"
+                                                         , rp.index
+                                                         , rp.index
+                                                         , input.Text
+                                                         ));
                             input.Restore(rp);
-                            return Err<T>(new ParsePredicateError(typeof(T).ToString(), rp.index));
+                            return e;
                         }
                     case Err<T> e:
                         input.Restore(rp);
