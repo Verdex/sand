@@ -21,6 +21,34 @@ namespace sand.Parsing {
         private Parser<Bool> BoolParser() 
             => Expect("false").Or(Expect("true")).Select(str => new Bool(str == "true"));
 
+        private Parser<Str> StrParser() {
+            static Parser<char> EscapeParser() 
+                => (from slash in Expect("\\")
+                   from other in Expect("t")
+                                 .Or(Expect("n"))
+                                 .Or(Expect("r"))
+                                 .Or(Expect("\\"))
+                                 .Or(Expect("\""))
+                   select other).Select( c => c switch {
+                       "t" => '\t',
+                       "n" => '\n',
+                       "r" => '\r',
+                       "\\" => '\\',
+                       "\"" => '"',
+                       _ => throw new Exception("Impossible escape character encountered"),
+                   });
+
+            static Parser<char> NotQuote() 
+                => from c in Any()
+                   where c != '"'
+                   select c;
+
+            return from q1 in Expect("\"")
+                   from cs in EscapeParser().Or(NotQuote()).ZeroOrMore()
+                   from q2 in Expect("\"")
+                   select new Str(new string(cs.ToArray()));
+        }
+
         private Parser<Expr> ParseExpr() {
             return null;
         }
