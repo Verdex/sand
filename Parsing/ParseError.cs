@@ -34,7 +34,7 @@ namespace sand.Parsing {
             }
             var errorLine = _text[startOfLine..endOfLine];
             var underLine = new string('-', _start - startOfLine);
-            var arrowLine = new string('^', _end - _start);
+            var arrowLine = new string('^', (_end - _start) + 1);
 
             var lineCount = _text[.._start].ToCharArray()
                                            .Where(EndLine)
