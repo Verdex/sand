@@ -18,6 +18,9 @@ namespace sand.Parsing {
                         .Select(str => int.Parse(str))
                         .Select( i => new Integer(i) );
 
+        private Parser<Boolean> BooleanParser() 
+            => Expect("false").Or(Expect("true")).Select(str => new Boolean(str == "true"));
+
         private Parser<Expr> ParseExpr() {
             return null;
         }
