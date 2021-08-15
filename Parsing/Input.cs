@@ -7,10 +7,10 @@ namespace sand.Parsing {
     public record RestorePoint(int index);
     
     public class Input {
-        private readonly string _text;
+        public string Text { get; }
         private int _index;
         public Input(string text) {
-            _text = text;
+            Text = text;
             _index = 0;
         }
 
@@ -20,11 +20,11 @@ namespace sand.Parsing {
         }
 
         public Option<char> GetChar() {
-            if (_index >= _text.Length) {
+            if (_index >= Text.Length) {
                 return None<char>();
             }
 
-            var ret = _text[_index];
+            var ret = Text[_index];
             _index++;
 
             return Some(ret);
@@ -33,14 +33,14 @@ namespace sand.Parsing {
         public Result<string> Expect(string value) {
             var s = _index;
             var e = _index + value.Length;
-            var target = _text[s..e];
+            var target = Text[s..e];
             if ( target == value ) {
                 return Ok(value);
             }
             return Err<string>(new ParseError( $"Expected {value}, but found {target}."
                                              , s 
                                              , e
-                                             , _text
+                                             , Text
                                              ));
         }
     }    
