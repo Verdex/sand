@@ -6,6 +6,6 @@ namespace sand.Parsing {
 
     public record Integer(int i) : Expr;
     public record Str(string s) : Expr;
-    public record Boolean(bool b) : Expr;
+    public record Bool(bool b) : Expr;
 
 }
