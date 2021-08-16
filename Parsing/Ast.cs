@@ -1,4 +1,6 @@
 
+using System.Collections.Generic;
+
 using sand.Util;
 
 namespace sand.Parsing {
@@ -17,6 +19,7 @@ namespace sand.Parsing {
     public record Integer(int i) : Expr;
     public record Str(string s) : Expr;
     public record Bool(bool b) : Expr;
+    public record Variable(string name) : Expr;
     public class LetExpr : Expr { }
     public class LambdaExpr : Expr { }
     public class CallExpr : Expr { }
