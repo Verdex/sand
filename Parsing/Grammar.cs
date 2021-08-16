@@ -49,19 +49,19 @@ namespace sand.Parsing {
                    select new Str(new string(cs.ToArray()));
         }
 
-        private Parser<Variable> VarParser() {
+        private Parser<string> IdentifierParser() {
             static Parser<char> Rest() 
                 => from c in Any()
                    where Char.IsLetterOrDigit(c) || c == '_'
                    select c;
 
-
             return from first in Any()
                where first == '_' || Char.IsLetter(first)
                from rest in Rest().ZeroOrMore()
-               select new Variable(new string(rest.Prepend(first).ToArray()));
+               select new string(rest.Prepend(first).ToArray());
         }
 
+        private Parser<Variable> VarParser() => IdentifierParser().Select(s => new Variable(s));
 
         private Parser<Expr> ParseExpr() {
             return null;
