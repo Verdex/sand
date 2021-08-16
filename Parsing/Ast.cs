@@ -20,7 +20,7 @@ namespace sand.Parsing {
     public record Str(string s) : Expr;
     public record Bool(bool b) : Expr;
     public record Variable(string name) : Expr;
-    public class LetExpr : Expr { }
+    public record LetExpr(string variable, Expr value, Expr body) : Expr { }
     public class LambdaExpr : Expr { }
     public class CallExpr : Expr { }
     public class ConstructorExpr : Expr { }
