@@ -10,18 +10,18 @@ using static sand.Util.OptionEx;
 namespace sand.Parsing {
     public class Grammar {
 
-        private Parser<Integer> IntegerParser()  
+        private Parser<Expr> IntegerParser()  
             => (from c in Any()
                where char.IsNumber(c)
                select c).OneoOrMore()
                         .Select(cs => new string(cs.ToArray()))
                         .Select(str => int.Parse(str))
-                        .Select( i => new Integer(i) );
+                        .Select( i => new Integer(i) as Expr );
 
-        private Parser<Bool> BoolParser() 
-            => Expect("false").Or(Expect("true")).Select(str => new Bool(str == "true"));
+        private Parser<Expr> BoolParser() 
+            => Expect("false").Or(Expect("true")).Select(str => new Bool(str == "true") as Expr);
 
-        private Parser<Str> StrParser() {
+        private Parser<Expr> StrParser() {
             static Parser<char> EscapeParser() 
                 => (from slash in Expect("\\")
                    from other in Expect("t")
@@ -46,7 +46,7 @@ namespace sand.Parsing {
             return from q1 in Expect("\"")
                    from cs in EscapeParser().Or(NotQuote()).ZeroOrMore()
                    from q2 in Expect("\"")
-                   select new Str(new string(cs.ToArray()));
+                   select new Str(new string(cs.ToArray())) as Expr;
         }
 
         private Parser<string> IdentifierParser() {
@@ -61,9 +61,17 @@ namespace sand.Parsing {
                select new string(rest.Prepend(first).ToArray());
         }
 
-        private Parser<Variable> VarParser() => IdentifierParser().Select(s => new Variable(s));
+        private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr);
 
-        private Parser<Expr> ParseExpr() {
+        private Parser<SType> SimpleTypeParser()
+            => (from id in IdentifierParser()
+               select id).Select(id => new SimpleType(id) as SType);
+
+        private Parser<SType> TypeParser() {
+            return null;
+        }
+
+        private Parser<Expr> ExprParser() {
             return null;
         }
     }
