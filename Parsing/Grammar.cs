@@ -1,6 +1,7 @@
 
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 using sand.Util;
 using static sand.Parsing.ParserEx;
@@ -16,10 +17,11 @@ namespace sand.Parsing {
                select c).OneoOrMore()
                         .Select(cs => new string(cs.ToArray()))
                         .Select(str => int.Parse(str))
-                        .Select( i => new Integer(i) as Expr );
+                        .Select( i => new Integer(i) as Expr )
+                        .Trim();
 
         private Parser<Expr> BoolParser() 
-            => Expect("false").Or(Expect("true")).Select(str => new Bool(str == "true") as Expr);
+            => Expect("false").Or(Expect("true")).Select(str => new Bool(str == "true") as Expr).Trim();
 
         private Parser<Expr> StrParser() {
             static Parser<char> EscapeParser() 
@@ -43,10 +45,10 @@ namespace sand.Parsing {
                    where c != '"'
                    select c;
 
-            return from q1 in Expect("\"")
+            return (from q1 in Expect("\"")
                    from cs in EscapeParser().Or(NotQuote()).ZeroOrMore()
                    from q2 in Expect("\"")
-                   select new Str(new string(cs.ToArray())) as Expr;
+                   select new Str(new string(cs.ToArray())) as Expr).Trim();
         }
 
         private Parser<string> IdentifierParser() {
