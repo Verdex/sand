@@ -65,7 +65,7 @@ namespace sand.Parsing {
 
         private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr).Trim();
 
-        public Parser<SType> TypeParser() {
+        private Parser<SType> TypeParser() {
             Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
 
             Parser<SType> TypeComma() 
