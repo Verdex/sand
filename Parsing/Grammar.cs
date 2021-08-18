@@ -65,32 +65,27 @@ namespace sand.Parsing {
 
         private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr).Trim();
 
-/*
-    a -> b -> c
-    A<...> -> ...
-    J 
-    (a,b)
+        public Parser<SType> TypeParser() {
+            Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
 
-*/
-        private Parser<SType> TypeParser() {
+            Parser<SType> TypeComma() 
+                => from t in TypeParser().Trim()
+                    from comma in Comma().Trim()
+                    select t;
+
             Parser<SType> SimpleType() 
-                => (from id in IdentifierParser()
+                => from id in IdentifierParser()
                    where char.IsUpper(id[0])
-                   select new SimpleType(id) as SType).Trim();
+                   select new SimpleType(id) as SType;
             
             Parser<SType> GenericType() 
-                => (from id in IdentifierParser()
-                    where char.IsLower(id[0]) 
-                    select new GenericType(id) as SType).Trim();
+                => from id in IdentifierParser()
+                   where char.IsLower(id[0]) 
+                   select new GenericType(id) as SType;
 
             Parser<SType> TupleType() {
                 Parser<char> LParen() => Expect("(").Select(x => '\0').Trim();
                 Parser<char> RParen() => Expect(")").Select(x => '\0').Trim();
-                Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
-                Parser<SType> TypeComma() 
-                    => from t in TypeParser().Trim()
-                       from comma in Comma().Trim()
-                       select t;
                 Parser<IEnumerable<SType>> Types() 
                     => from ts in TypeComma().ZeroOrMore()
                        from t in TypeParser().Trim()
@@ -101,7 +96,38 @@ namespace sand.Parsing {
                        select new TupleType(ts) as SType;
             }
 
-            return SimpleType();
+            Parser<char> Arrow() => Expect("->").Select(x => '\0').Trim();
+
+            Parser<SType> Index() {
+                Parser<char> LAngle() => Expect("<").Select(x => '\0').Trim();
+                Parser<char> RAngle() => Expect(">").Select(x => '\0').Trim();
+
+                return (from id in IdentifierParser()
+                   where char.IsUpper(id[0])
+                   from la in LAngle()
+                   from ts in TypeComma().ZeroOrMore()
+                   from t in TypeParser().Trim()
+                   from ra in RAngle()
+                   select new IndexedType(id, ts.Append(t)) as SType).Trim();
+            }
+                       
+            Parser<SType> GenericArrow() 
+                => from g in GenericType() 
+                   from a in Arrow()
+                   from t in TypeParser().Trim()
+                   select new ArrowType(g, t) as SType;
+
+            Parser<SType> TypeArrow() 
+                => from s in SimpleType() 
+                   from a in Arrow()
+                   from t in TypeParser().Trim()
+                   select new ArrowType(s, t) as SType;
+
+            return Index().Or(TupleType())
+                          .Or(GenericArrow())
+                          .Or(TypeArrow())
+                          .Or(SimpleType())
+                          .Or(GenericType());
         }
 
         private Parser<Expr> ExprParser() {
