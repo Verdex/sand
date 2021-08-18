@@ -11,6 +11,7 @@ namespace sand.Parsing {
 
     public interface SType { }
     public record SimpleType(string name) : SType;
+    public record GenericType(string name) : SType;
     public record IndexedType(string name, IEnumerable<SType> parameters) : SType;
     public record ArrowType(SType source, SType destination) : SType;
     public record TupleType(IEnumerable<SType> parameters) : SType;
