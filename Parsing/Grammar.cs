@@ -111,23 +111,20 @@ namespace sand.Parsing {
                    select new IndexedType(id, ts.Append(t)) as SType).Trim();
             }
                        
-            Parser<SType> GenericArrow() 
-                => from g in GenericType() 
-                   from a in Arrow()
-                   from t in TypeParser().Trim()
-                   select new ArrowType(g, t) as SType;
-
-            Parser<SType> TypeArrow() 
-                => from s in SimpleType() 
+            Parser<SType> ArrowCombinator(Parser<SType> parser) 
+                => from s in parser 
                    from a in Arrow()
                    from t in TypeParser().Trim()
                    select new ArrowType(s, t) as SType;
 
-            return Index().Or(TupleType())
-                          .Or(GenericArrow())
-                          .Or(TypeArrow())
-                          .Or(SimpleType())
-                          .Or(GenericType());
+            return ArrowCombinator(Index())
+                    .Or(ArrowCombinator(TupleType()))
+                    .Or(ArrowCombinator(SimpleType()))
+                    .Or(ArrowCombinator(GenericType()))
+                    .Or(TupleType())
+                    .Or(Index())
+                    .Or(SimpleType())
+                    .Or(GenericType());
         }
 
         private Parser<Expr> ExprParser() {
