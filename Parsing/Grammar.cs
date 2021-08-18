@@ -57,20 +57,51 @@ namespace sand.Parsing {
                    where Char.IsLetterOrDigit(c) || c == '_'
                    select c;
 
-            return from first in Any()
-               where first == '_' || Char.IsLetter(first)
-               from rest in Rest().ZeroOrMore()
-               select new string(rest.Prepend(first).ToArray());
+            return (from first in Any()
+                   where first == '_' || Char.IsLetter(first)
+                   from rest in Rest().ZeroOrMore()
+                   select new string(rest.Prepend(first).ToArray())).Trim();
         }
 
-        private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr);
+        private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr).Trim();
 
-        private Parser<SType> SimpleTypeParser()
-            => (from id in IdentifierParser()
-               select id).Select(id => new SimpleType(id) as SType);
+/*
+    a -> b -> c
+    A<...> -> ...
+    J 
+    (a,b)
 
+*/
         private Parser<SType> TypeParser() {
-            return null;
+            Parser<SType> SimpleType() 
+                => (from id in IdentifierParser()
+                   where char.IsUpper(id[0])
+                   select new SimpleType(id) as SType).Trim();
+            
+            Parser<SType> GenericType() 
+                => (from id in IdentifierParser()
+                    where char.IsLower(id[0]) 
+                    select new GenericType(id) as SType).Trim();
+
+            Parser<SType> TupleType() {
+                Parser<char> LParen() => Expect("(").Select(x => '\0').Trim();
+                Parser<char> RParen() => Expect(")").Select(x => '\0').Trim();
+                Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
+                Parser<SType> TypeComma() 
+                    => from t in TypeParser().Trim()
+                       from comma in Comma().Trim()
+                       select t;
+                Parser<IEnumerable<SType>> Types() 
+                    => from ts in TypeComma().ZeroOrMore()
+                       from t in TypeParser().Trim()
+                       select ts.Append(t); 
+                return from lp in LParen()
+                       from ts in Types()
+                       from rp in RParen()
+                       select new TupleType(ts) as SType;
+            }
+
+            return SimpleType();
         }
 
         private Parser<Expr> ExprParser() {
