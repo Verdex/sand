@@ -10,6 +10,11 @@ using static sand.Util.OptionEx;
 namespace sand.Parsing {
     public class Grammar {
 
+        private Parser<string> WS() 
+            => (from ws in Any() 
+               where char.IsWhiteSpace(ws)
+               select ws).ZeroOrMore().Select(x => "");
+
         private Parser<Expr> IntegerParser()  
             => (from c in Any()
                where char.IsNumber(c)
