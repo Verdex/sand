@@ -78,7 +78,28 @@ namespace sand.Parsing {
 
         private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr).Trim();
 
-        public Parser<SType> TypeParser() {
+        private Parser<Expr> LetExprParser() {
+            Parser<string> Colon() => Expect(":").Trim();
+            Parser<Option<SType>> LetType() 
+                => (from c in Colon()
+                   from t in TypeParser()
+                   select t).Maybe();
+
+            return from l in Expect("let").Trim()
+                   from variable in IdentifierParser()
+                   from type in LetType()
+                   from e in Expect("=").Trim()
+                   from valueExpr in ExprParser()
+                   from i in Expect("in").Trim()
+                   from bodyExpr in ExprParser()
+                   select new LetExpr(variable, type, valueExpr, bodyExpr) as Expr;
+        }
+
+        private Parser<Expr> ExprParser() {
+            return null;
+        }
+
+        private Parser<SType> TypeParser() {
             Parser<SType> SimpleType() 
                 => from id in IdentifierParser()
                    where char.IsUpper(id[0])
@@ -129,10 +150,6 @@ namespace sand.Parsing {
                     .Or(Index())
                     .Or(SimpleType())
                     .Or(GenericType());
-        }
-
-        private Parser<Expr> ExprParser() {
-            return null;
         }
     }
 }
