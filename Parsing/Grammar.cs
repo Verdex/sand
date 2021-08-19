@@ -11,6 +11,19 @@ using static sand.Util.OptionEx;
 namespace sand.Parsing {
     public class Grammar {
 
+        Parser<IEnumerable<T>> List<T>(Parser<T> parser) {
+            Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
+
+            Parser<T> TComma() 
+                => from t in parser.Trim()
+                   from comma in Comma().Trim()
+                   select t;
+            
+            return from ts in TComma().ZeroOrMore()
+                   from t in parser.Trim()
+                   select ts.Append(t);
+        }
+
         private Parser<Expr> IntegerParser()  
             => (from c in Any()
                where char.IsNumber(c)
@@ -65,14 +78,7 @@ namespace sand.Parsing {
 
         private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr).Trim();
 
-        private Parser<SType> TypeParser() {
-            Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
-
-            Parser<SType> TypeComma() 
-                => from t in TypeParser().Trim()
-                    from comma in Comma().Trim()
-                    select t;
-
+        public Parser<SType> TypeParser() {
             Parser<SType> SimpleType() 
                 => from id in IdentifierParser()
                    where char.IsUpper(id[0])
@@ -87,9 +93,8 @@ namespace sand.Parsing {
                 Parser<char> LParen() => Expect("(").Select(x => '\0').Trim();
                 Parser<char> RParen() => Expect(")").Select(x => '\0').Trim();
                 Parser<IEnumerable<SType>> Types() 
-                    => from ts in TypeComma().ZeroOrMore()
-                       from t in TypeParser().Trim()
-                       select ts.Append(t); 
+                    => from ts in List(TypeParser())
+                       select ts;
                 return from lp in LParen()
                        from ts in Types()
                        from rp in RParen()
@@ -105,10 +110,9 @@ namespace sand.Parsing {
                 return (from id in IdentifierParser()
                    where char.IsUpper(id[0])
                    from la in LAngle()
-                   from ts in TypeComma().ZeroOrMore()
-                   from t in TypeParser().Trim()
+                   from ts in List(TypeParser())
                    from ra in RAngle()
-                   select new IndexedType(id, ts.Append(t)) as SType).Trim();
+                   select new IndexedType(id, ts) as SType).Trim();
             }
                        
             Parser<SType> ArrowCombinator(Parser<SType> parser) 
