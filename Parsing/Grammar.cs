@@ -95,6 +95,31 @@ namespace sand.Parsing {
                    select new LetExpr(variable, type, valueExpr, bodyExpr) as Expr;
         }
 
+        private Parser<Expr> LambdaExprParser() {
+            Parser<string> OrBar() => Expect("|").Trim();
+            Parser<string> Colon() => Expect(":").Trim();
+            Parser<string> Arrow() => Expect("->").Trim();
+            Parser<SType> ArrowType() 
+                => from a in Arrow()
+                   from t in TypeParser()
+                   select t;
+            Parser<SType> ColonType() 
+                => from c in Colon()
+                   from t in TypeParser()
+                   select t;
+            Parser<(string, Option<SType>)> Parameter() 
+                => from id in IdentifierParser()
+                   from t in ColonType().Maybe()
+                   select (id, t);
+
+            return from o1 in OrBar()
+                   from parameters in Parameter().ZeroOrMore()
+                   from o2 in OrBar()
+                   from returnType in ArrowType().Maybe()
+                   from expr in ExprParser()
+                   select new LambdaExpr(parameters, returnType, expr) as Expr;
+        }
+
         private Parser<Expr> ExprParser() {
             return null;
         }
