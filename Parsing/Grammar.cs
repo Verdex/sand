@@ -120,6 +120,21 @@ namespace sand.Parsing {
                    select new LambdaExpr(parameters, returnType, expr) as Expr;
         }
 
+        private Parser<Expr> ConstructorExprParser() {
+            Parser<string> LParen() => Expect("(").Trim();
+            Parser<string> RParen() => Expect(")").Trim();
+            Parser<Expr> ParamConstructor() 
+                => from id in IdentifierParser()
+                   from lp in LParen()
+                   from es in List(ExprParser())
+                   from rp in RParen()
+                   select new ConstructorExpr(id, es) as Expr;
+            Parser<Expr> EmptyConstructor() 
+                => IdentifierParser().Select( id => new ConstructorExpr(id, new Expr[0]) as Expr );
+
+            return ParamConstructor().Or(EmptyConstructor()); 
+        }
+
         private Parser<Expr> ExprParser() {
             return null;
         }
