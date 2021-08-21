@@ -76,7 +76,10 @@ namespace sand.Parsing {
                    select new string(rest.Prepend(first).ToArray())).Trim();
         }
 
-        private Parser<Expr> VarParser() => IdentifierParser().Select(s => new Variable(s) as Expr).Trim();
+        private Parser<Expr> VarParser() 
+            => from id in IdentifierParser()
+               where char.IsLower(id[0])
+               select new Variable(id) as Expr;
 
         private Parser<Expr> LetExprParser() {
             Parser<string> Colon() => Expect(":").Trim();
@@ -125,6 +128,7 @@ namespace sand.Parsing {
             Parser<string> RParen() => Expect(")").Trim();
             Parser<Expr> ParamConstructor() 
                 => from id in IdentifierParser()
+                   where char.IsUpper(id[0])
                    from lp in LParen()
                    from es in List(ExprParser())
                    from rp in RParen()
@@ -135,8 +139,35 @@ namespace sand.Parsing {
             return ParamConstructor().Or(EmptyConstructor()); 
         }
 
+        private Parser<Expr> TupleExprParser() {
+            Parser<string> LParen() => Expect("(").Trim();
+            Parser<string> RParen() => Expect(")").Trim();
+
+            return from lp in LParen()
+                   from es in List(ExprParser())
+                   from rp in RParen()
+                   select new TupleExpr(es) as Expr;
+        }
+
         private Parser<Expr> ExprParser() {
-            return null;
+            Parser<string> LParen() => Expect("(").Trim();
+            Parser<string> RParen() => Expect(")").Trim();
+
+            Parser<Expr> Call()
+                => from e in ExprParser() // TODO eliminate left recursion
+                   from lp in LParen()
+                   from parameters in ExprParser().ZeroOrMore()
+                   from rp in RParen()
+                   select new CallExpr(e, parameters) as Expr;
+
+            return TupleExprParser()
+                    .Or(IntegerParser())
+                    .Or(StrParser())
+                    .Or(BoolParser())
+                    .Or(LetExprParser())
+                    .Or(ConstructorExprParser())
+                    .Or(LambdaExprParser())
+                    .Or(VarParser());
         }
 
         private Parser<SType> TypeParser() {

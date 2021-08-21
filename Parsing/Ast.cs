@@ -21,6 +21,7 @@ namespace sand.Parsing {
     public record Str(string s) : Expr;
     public record Bool(bool b) : Expr;
     public record Variable(string name) : Expr;
+    public record TupleExpr(IEnumerable<Expr> parameters) : Expr;
     public record LetExpr(string variable, Option<SType> type, Expr value, Expr body) : Expr;
     public record LambdaExpr(IEnumerable<(string, Option<SType>)> parameters, Option<SType> returnType, Expr body) : Expr;
     public record CallExpr(Expr funcExpr, IEnumerable<Expr> parameters) : Expr;
