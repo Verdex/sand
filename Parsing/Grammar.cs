@@ -153,14 +153,23 @@ namespace sand.Parsing {
             Parser<string> LParen() => Expect("(").Trim();
             Parser<string> RParen() => Expect(")").Trim();
 
-            Parser<Expr> Call()
-                => from e in ExprParser() // TODO eliminate left recursion
-                   from lp in LParen()
-                   from parameters in ExprParser().ZeroOrMore()
-                   from rp in RParen()
-                   select new CallExpr(e, parameters) as Expr;
+            Parser<Expr> Call() {
+                Parser<Expr> Callables() 
+                    // The TupleExpr includes just paren expr
+                    // which I want to be able to call in case you put a 
+                    // lambda or a match in there or a let that returns
+                    // a lambda or whatever
+                    => TupleExprParser().Or(VarParser());
 
-            return TupleExprParser()
+                return from e in Callables()
+                       from lp in LParen()
+                       from parameters in ExprParser().ZeroOrMore()
+                       from rp in RParen()
+                       select new CallExpr(e, parameters) as Expr;
+            }
+
+            return Call()
+                    .Or(TupleExprParser())
                     .Or(IntegerParser())
                     .Or(StrParser())
                     .Or(BoolParser())
