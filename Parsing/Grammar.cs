@@ -179,6 +179,27 @@ namespace sand.Parsing {
                     .Or(VarParser());
         }
 
+        private Parser<Pattern> PatternParser() {
+            Parser<Pattern> WildCardParser() => Expect("_").Trim().Select( x => new WildCard() as Pattern);
+            Parser<Pattern> VariableParser() 
+                => from id in IdentifierParser()
+                   where char.IsLower(id[0])
+                   select new VariablePattern(id) as Pattern;
+            Parser<string> LParen() => Expect("(").Trim();
+            Parser<string> RParen() => Expect(")").Trim();
+            Parser<Pattern> ParamConstructor() 
+                => from id in IdentifierParser()
+                   where char.IsUpper(id[0])
+                   from lp in LParen()
+                   from ps in List(PatternParser())
+                   from rp in RParen()
+                   select new ConstructorPattern(id, ps) as Pattern;
+            Parser<Pattern> EmptyConstructor() 
+                => IdentifierParser().Select( id => new ConstructorPattern(id, new Pattern[0]) as Pattern);
+                
+            return WildCardParser().Or(VariableParser()).Or(ParamConstructor()).Or(EmptyConstructor());
+        }
+
         private Parser<SType> TypeParser() {
             Parser<SType> SimpleType() 
                 => from id in IdentifierParser()
