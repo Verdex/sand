@@ -1,25 +1,27 @@
 
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace sand.Parsing {
     public static class Displayer {
-        public static string Display(TopLevel input) 
+        public static string Display(this TopLevel input) 
             => input switch {
                 TypeDefine x => Display(x),
                 LetStatement x => Display(x),
                 _ => throw new Exception("Unexpected TopLevel case"),
             };
         
-        public static string Display(TypeDefine input)
+        public static string Display(this TypeDefine input)
             => "";
 
-        public static string Display(LetStatement input) 
+        public static string Display(this LetStatement input) 
             => "";
 
-        public static string Display(DefineConstructor input) 
+        public static string Display(this DefineConstructor input) 
             => "";
 
-        public static string Display(SType input) 
+        public static string Display(this SType input) 
             => input switch {
                 SimpleType x => Display(x),
                 GenericType x => Display(x),
@@ -29,22 +31,22 @@ namespace sand.Parsing {
                 _ => throw new Exception("unexpected SType case"),
             };
 
-        public static string Display(SimpleType input)
+        public static string Display(this SimpleType input)
             => "";
 
-        public static string Display(GenericType input) 
+        public static string Display(this GenericType input) 
             => "";
 
-        public static string Display(IndexedType input) 
+        public static string Display(this IndexedType input) 
             => "";
 
-        public static string Display(ArrowType input)
+        public static string Display(this ArrowType input)
             => "";
 
-        public static string Display(TupleType input) 
+        public static string Display(this TupleType input) 
             => "";
 
-        public static string Display(Expr input)
+        public static string Display(this Expr input)
             => input switch {
                 Integer x => Display(x),
                 Str x => Display(x),
@@ -59,18 +61,18 @@ namespace sand.Parsing {
                 _ => throw new Exception("unexpected expr case"),
             };
 
-        public static string Display(Integer input) => $" {input.i} ";
-        public static string Display(Str input) => $" \"{input.s}\" ";
-        public static string Display(Bool input) => $" {input.b} ";
-        public static string Display(Variable input) => $" {input.name} ";
-        public static string Display(TupleExpr input) => "";
-        public static string Display(LetExpr input) => "";
-        public static string Display(LambdaExpr input) => "";
-        public static string Display(CallExpr input) => "";
-        public static string Display(ConstructorExpr input) => "";
-        public static string Display(MatchExpr input) => "";
+        public static string Display(this Integer input) => $" {input.i} ";
+        public static string Display(this Str input) => $" \"{input.s}\" ";
+        public static string Display(this Bool input) => $" {input.b} ";
+        public static string Display(this Variable input) => $" {input.name} ";
+        public static string Display(this TupleExpr input) => "";
+        public static string Display(this LetExpr input) => "";
+        public static string Display(this LambdaExpr input) => "";
+        public static string Display(this CallExpr input) => "";
+        public static string Display(this ConstructorExpr input) => "";
+        public static string Display(this MatchExpr input) => "";
 
-        public static string Display(Pattern input) 
+        public static string Display(this Pattern input) 
             => input switch {
                 WildCard x => Display(x),
                 VariablePattern x => Display(x),
@@ -78,8 +80,12 @@ namespace sand.Parsing {
                 _ => throw new Exception("unexpected pattern case"),
             };
 
-        public static string Display(WildCard input) => "";
-        public static string Display(VariablePattern input) => "";
-        public static string Display(ConstructorPattern input) => "";
+        public static string Display(this WildCard input) => " _ ";
+        public static string Display(this VariablePattern input) => $" {input.name} ";
+        public static string Display(this ConstructorPattern input) 
+            => $" {input.name}( {input.parameters.Select(x => x.Display()).Join(", ")}) ";
+        
+        private static string Join(this IEnumerable<string> target, string sep) 
+            => string.Join(sep, target);
     }
 }
