@@ -11,7 +11,7 @@ using static sand.Util.OptionEx;
 namespace sand.Parsing {
     public class Grammar {
 
-        Parser<IEnumerable<T>> List<T>(Parser<T> parser) {
+        private Parser<IEnumerable<T>> List<T>(Parser<T> parser) {
             Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
 
             Parser<T> TComma() 
