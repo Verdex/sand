@@ -73,8 +73,15 @@ namespace sand.Parsing {
             => $"let {input.variable} {input.type.Display( x => $" : {x.Display()}" )} = {input.value.Display()} \nin {input.body.Display()}\n";
         public static string Display(this LambdaExpr input) 
             => $" | {input.parameters.Display(x => $" {x.Item1} {x.Item2.Display(x => $" : {x.Display()} " )} ") } | {input.returnType.Display(x => $" -> {x.Display()} ")} {input.body.Display()} ";
-        public static string Display(this CallExpr input) => "";
-        public static string Display(this ConstructorExpr input) => "";
+        public static string Display(this CallExpr input) => $" {input.funcExpr.Display()}( {input.parameters.Display(Display)} ) ";
+        public static string Display(this ConstructorExpr input) {
+            if (input.parameters.Any()) {
+                return $" {input.name}( {input.parameters.Display(Display)} )";
+            }
+            else {
+                return $" {input.name} ";
+            }
+        } 
         public static string Display(this MatchExpr input) => "";
 
         public static string Display(this Pattern input) 

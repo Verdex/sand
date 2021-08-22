@@ -226,10 +226,11 @@ namespace sand.Parsing {
                    select (pat, expr);
 
             return from m in Expect("match").Trim()
+                   from expr in ExprParser()
                    from lc in LCurl()
                    from ps in List(Case())
                    from rc in RCurl()
-                   select new MatchExpr(ps) as Expr;
+                   select new MatchExpr(expr, ps) as Expr;
         }
 
         private Parser<Expr> ExprParser() {

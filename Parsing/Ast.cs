@@ -31,7 +31,7 @@ namespace sand.Parsing {
     public record LambdaExpr(IEnumerable<(string, Option<SType>)> parameters, Option<SType> returnType, Expr body) : Expr;
     public record CallExpr(Expr funcExpr, IEnumerable<Expr> parameters) : Expr;
     public record ConstructorExpr(string name, IEnumerable<Expr> parameters) : Expr;
-    public record MatchExpr(IEnumerable<(Pattern, Expr)> patterns) : Expr;
+    public record MatchExpr(Expr expr, IEnumerable<(Pattern, Expr)> patterns) : Expr;
 
     public interface Pattern { }
     public record WildCard() : Pattern;
