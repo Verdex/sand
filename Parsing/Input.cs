@@ -8,38 +8,38 @@ namespace sand.Parsing {
     
     public class Input {
         public string Text { get; }
-        private int _index;
+        public int Index { get; }
         public Input(string text) {
             Text = text;
-            _index = 0;
+            Index = 0;
         }
 
-        public RestorePoint CreateRestore() => new RestorePoint(_index);
+        public RestorePoint CreateRestore() => new RestorePoint(Index);
         public void Restore(RestorePoint rp) {
-            _index = rp.index;
+            Index = rp.index;
         }
 
         public Option<char> GetChar() {
-            if (_index >= Text.Length) {
+            if (Index >= Text.Length) {
                 return None<char>();
             }
 
-            var ret = Text[_index];
-            _index++;
+            var ret = Text[Index];
+            Index++;
 
             return Some(ret);
         }
 
         public Result<string> Expect(string value) {
-            if ( value.Length + _index > Text.Length ) {
+            if ( value.Length + Index > Text.Length ) {
                 return Err<string>(new EndOfFileError());
             }
 
-            var s = _index;
-            var e = _index + value.Length;
+            var s = Index;
+            var e = Index + value.Length;
             var target = Text[s..e];
             if ( target == value ) {
-                _index += value.Length;
+                Index += value.Length;
                 return Ok(value);
             }
             return Err<string>(new ParseError( $"Expected {value}, but found {target}."

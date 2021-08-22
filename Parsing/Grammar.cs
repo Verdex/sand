@@ -11,6 +11,30 @@ using static sand.Util.OptionEx;
 namespace sand.Parsing {
     public class Grammar {
 
+        public Result<IEnumerable<TopLevel>> Parse(string s) {
+            var input = new Input(s);
+
+            var p = TypeDefineParser().Or(LetStatementParser()).ZeroOrMore();
+
+            switch (p.Parse(input)) {
+                case Ok<IEnumerable<TopLevel>> o: 
+                    switch (Any().Parse(input)) {
+                        case OK<char> o: 
+                            return new Err<IEnumerable<TopLevel>>(
+                                new ParseError( $"Expected end of file but found {o.Item}"
+                                              , input.Index
+                                              , input.Index
+                                              , input.Text
+                                              ));
+                        case Err<char> e: return o;
+                        default : throw new Exception("Unexpected Result case");
+                    }
+
+                case Err<IEnumerable<TopLevel>> e: return e;
+                default : throw new Exception("Unexpected Result case");
+            }
+        }
+
         private Parser<IEnumerable<T>> List<T>(Parser<T> parser) {
             Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
 
@@ -23,6 +47,15 @@ namespace sand.Parsing {
                    from t in parser.Trim()
                    select ts.Append(t);
         }
+
+        private Parser<TopLevel> TypeDefineParser() {
+            return null;
+        }
+
+        private Parser<TopLevel> LetStatementParser()
+            => from l in LetExprParser()
+               from semi in Expect(";").Trim()
+               select new LetStatement(l) as TopLevel;
 
         private Parser<Expr> IntegerParser()  
             => (from c in Any()
