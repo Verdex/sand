@@ -8,7 +8,6 @@ namespace sand.Parsing {
     public interface TopLevel { }
     public record LetStatement(LetExpr expr) : TopLevel;
     public record TypeDefine( string name
-                            , Option<IEnumerable<string>> genericTypes
                             , IEnumerable<DefineConstructor> constructors
                             ) : TopLevel;
 

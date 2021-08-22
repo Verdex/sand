@@ -51,14 +51,6 @@ namespace sand.Parsing {
         private Parser<TopLevel> TypeDefineParser() {
             Parser<string> LParen() => Expect("(").Trim();
             Parser<string> RParen() => Expect(")").Trim();
-            Parser<string> LAngle() => Expect("<").Trim();
-            Parser<string> RAngle() => Expect(">").Trim();
-
-            Parser<IEnumerable<string>> GenericTypes() 
-                => from la in LAngle()
-                   from ts in List(IdentifierParser()) // TODO these should all be lower case
-                   from ra in RAngle()
-                   select ts;
 
             Parser<DefineConstructor> Constructor() {
                 Parser<DefineConstructor> Empty() 
@@ -79,11 +71,10 @@ namespace sand.Parsing {
             return from t in Expect("type").Trim()
                    from name in IdentifierParser()
                    where char.IsUpper(name[0])
-                   from genericTypes in GenericTypes().Maybe()
                    from e in Expect("=").Trim()
                    from cons in List(Constructor(), "|")
                    from semi in Expect(";").Trim()
-                   select new TypeDefine(name, genericTypes, cons) as TopLevel;
+                   select new TypeDefine(name, cons) as TopLevel;
         }
 
         private Parser<TopLevel> LetStatementParser()

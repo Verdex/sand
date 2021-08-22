@@ -16,7 +16,7 @@ namespace sand.Parsing {
             };
         
         public static string Display(this TypeDefine input)
-            => $"type {input.name} {input.genericTypes.Display(x => $" < {x.Display( x => x )} > ")} = {input.constructors.Display(Display, "|")}";
+            => $"type {input.name} = {input.constructors.Display(Display, "|")}";
 
         public static string Display(this LetStatement input) 
             => $"{input.expr.Display()};";
