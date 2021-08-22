@@ -32,19 +32,19 @@ namespace sand.Parsing {
             };
 
         public static string Display(this SimpleType input)
-            => "";
+            => $" {input.name} ";
 
         public static string Display(this GenericType input) 
-            => "";
+            => $" {input.name} ";
 
         public static string Display(this IndexedType input) 
-            => "";
+            => $" {input.name}< {input.parameters.Display(Display)} > ";
 
         public static string Display(this ArrowType input)
-            => "";
+            => $" {input.source} -> {input.destination} ";
 
         public static string Display(this TupleType input) 
-            => "";
+            => $" ( {input.parameters.Display(Display)} ) ";
 
         public static string Display(this Expr input)
             => input switch {
@@ -65,7 +65,7 @@ namespace sand.Parsing {
         public static string Display(this Str input) => $" \"{input.s}\" ";
         public static string Display(this Bool input) => $" {input.b} ";
         public static string Display(this Variable input) => $" {input.name} ";
-        public static string Display(this TupleExpr input) => "";
+        public static string Display(this TupleExpr input) => $" ( {input.parameters.Display(Display)} ) ";
         public static string Display(this LetExpr input) => "";
         public static string Display(this LambdaExpr input) => "";
         public static string Display(this CallExpr input) => "";
@@ -83,8 +83,11 @@ namespace sand.Parsing {
         public static string Display(this WildCard input) => " _ ";
         public static string Display(this VariablePattern input) => $" {input.name} ";
         public static string Display(this ConstructorPattern input) 
-            => $" {input.name}( {input.parameters.Select(x => x.Display()).Join(", ")}) ";
+            => $" {input.name}( {input.parameters.Display(Display)}) ";
         
+        private static string Display<T>(this IEnumerable<T> target, Func<T, string> display, string sep = ", ") 
+            => target.Select(x => display(x)).Join(sep);
+
         private static string Join(this IEnumerable<string> target, string sep) 
             => string.Join(sep, target);
     }
