@@ -19,9 +19,9 @@ namespace sand.Parsing {
             switch (p.Parse(input)) {
                 case Ok<IEnumerable<TopLevel>> o: 
                     switch (Any().Parse(input)) {
-                        case OK<char> o: 
+                        case Ok<char> o2: 
                             return new Err<IEnumerable<TopLevel>>(
-                                new ParseError( $"Expected end of file but found {o.Item}"
+                                new ParseError( $"Expected end of file but found {o2.Item}"
                                               , input.Index
                                               , input.Index
                                               , input.Text
@@ -55,7 +55,7 @@ namespace sand.Parsing {
         private Parser<TopLevel> LetStatementParser()
             => from l in LetExprParser()
                from semi in Expect(";").Trim()
-               select new LetStatement(l) as TopLevel;
+               select new LetStatement(l as LetExpr) as TopLevel;
 
         private Parser<Expr> IntegerParser()  
             => (from c in Any()

@@ -8,7 +8,7 @@ namespace sand.Parsing {
     
     public class Input {
         public string Text { get; }
-        public int Index { get; }
+        public int Index { get; private set; }
         public Input(string text) {
             Text = text;
             Index = 0;
