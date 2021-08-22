@@ -58,5 +58,28 @@ namespace sand.Parsing {
                 MatchExpr x => Display(x),
                 _ => throw new Exception("unexpected expr case"),
             };
+
+        public static string Display(Integer input) => $" {input.i} ";
+        public static string Display(Str input) => $" \"{input.s}\" ";
+        public static string Display(Bool input) => $" {input.b} ";
+        public static string Display(Variable input) => $" {input.name} ";
+        public static string Display(TupleExpr input) => "";
+        public static string Display(LetExpr input) => "";
+        public static string Display(LambdaExpr input) => "";
+        public static string Display(CallExpr input) => "";
+        public static string Display(ConstructorExpr input) => "";
+        public static string Display(MatchExpr input) => "";
+
+        public static string Display(Pattern input) 
+            => input switch {
+                WildCard x => Display(x),
+                VariablePattern x => Display(x),
+                ConstructorPattern x => Display(x),
+                _ => throw new Exception("unexpected pattern case"),
+            };
+
+        public static string Display(WildCard input) => "";
+        public static string Display(VariablePattern input) => "";
+        public static string Display(ConstructorPattern input) => "";
     }
 }
