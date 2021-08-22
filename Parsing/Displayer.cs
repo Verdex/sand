@@ -3,6 +3,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
+using sand.Util;
+using static sand.Util.OptionEx;
+
 namespace sand.Parsing {
     public static class Displayer {
         public static string Display(this TopLevel input) 
@@ -66,8 +69,10 @@ namespace sand.Parsing {
         public static string Display(this Bool input) => $" {input.b} ";
         public static string Display(this Variable input) => $" {input.name} ";
         public static string Display(this TupleExpr input) => $" ( {input.parameters.Display(Display)} ) ";
-        public static string Display(this LetExpr input) => "";
-        public static string Display(this LambdaExpr input) => "";
+        public static string Display(this LetExpr input) 
+            => $"let {input.variable} {input.type.Display( x => $" : {x.Display()}" )} = {input.value.Display()} \nin {input.body.Display()}\n";
+        public static string Display(this LambdaExpr input) 
+            => $" | {input.parameters.Display(x => $" {x.Item1} {x.Item2.Display(x => $" : {x.Display()} " )} ") } | {input.returnType.Display(x => $" -> {x.Display()} ")} {input.body.Display()} ";
         public static string Display(this CallExpr input) => "";
         public static string Display(this ConstructorExpr input) => "";
         public static string Display(this MatchExpr input) => "";
@@ -87,6 +92,13 @@ namespace sand.Parsing {
         
         private static string Display<T>(this IEnumerable<T> target, Func<T, string> display, string sep = ", ") 
             => target.Select(x => display(x)).Join(sep);
+
+        private static string Display<T>(this Option<T> target, Func<T, string> display)
+            => display switch {
+                Some<T> s  => display(s.Item),
+                None<T> n => "",
+                _ => throw new Exception("Unexpected Option case"),
+            };
 
         private static string Join(this IEnumerable<string> target, string sep) 
             => string.Join(sep, target);
