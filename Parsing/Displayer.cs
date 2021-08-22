@@ -16,13 +16,19 @@ namespace sand.Parsing {
             };
         
         public static string Display(this TypeDefine input)
-            => "";
+            => $"type {input.name} {input.genericTypes.Display(x => $" < {x.Display( x => x )} > ")} = {input.constructors.Display(Display, "|")}";
 
         public static string Display(this LetStatement input) 
-            => "";
+            => $"{input.expr.Display()};";
 
-        public static string Display(this DefineConstructor input) 
-            => "";
+        public static string Display(this DefineConstructor input) {
+            if(input.parameters.Any()) {
+                return $" {input.name}( {input.parameters.Display(x => x)} ) ";
+            }
+            else {
+                return $" {input.name} ";
+            }
+        }
 
         public static string Display(this SType input) 
             => input switch {
