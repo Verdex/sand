@@ -35,8 +35,8 @@ namespace sand.Parsing {
             }
         }
 
-        private Parser<IEnumerable<T>> List<T>(Parser<T> parser) {
-            Parser<char> Comma() => Expect(",").Select(x => '\0').Trim();
+        private Parser<IEnumerable<T>> List<T>(Parser<T> parser, string sep = ",") {
+            Parser<char> Comma() => Expect(sep).Select(x => '\0').Trim();
 
             Parser<T> TComma() 
                 => from t in parser.Trim()
@@ -49,7 +49,41 @@ namespace sand.Parsing {
         }
 
         private Parser<TopLevel> TypeDefineParser() {
-            return null;
+            Parser<string> LParen() => Expect("(").Trim();
+            Parser<string> RParen() => Expect(")").Trim();
+            Parser<string> LAngle() => Expect("<").Trim();
+            Parser<string> RAngle() => Expect(">").Trim();
+
+            Parser<IEnumerable<string>> GenericTypes() 
+                => from la in LAngle()
+                   from ts in List(IdentifierParser()) // TODO these should all be lower case
+                   from ra in RAngle()
+                   select ts;
+
+            Parser<DefineConstructor> Constructor() {
+                Parser<DefineConstructor> Empty() 
+                    => from id in IdentifierParser()
+                       where char.IsUpper(id[0])
+                       select new DefineConstructor(id, new string[0]);
+                Parser<DefineConstructor> Paramed()
+                    => from id in IdentifierParser()
+                       where char.IsUpper(id[0])
+                       from lp in LParen()
+                       from ps in List(IdentifierParser()) // upper or lower case because generic or specific types
+                       from rp in RParen()
+                       select new DefineConstructor(id, ps);
+
+                return Paramed().Or(Empty());
+            }
+
+            return from t in Expect("type").Trim()
+                   from name in IdentifierParser()
+                   where char.IsUpper(name[0])
+                   from genericTypes in GenericTypes().Maybe()
+                   from e in Expect("=").Trim()
+                   from cons in List(Constructor(), "|")
+                   from semi in Expect(";").Trim()
+                   select new TypeDefine(name, genericTypes, cons) as TopLevel;
         }
 
         private Parser<TopLevel> LetStatementParser()
