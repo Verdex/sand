@@ -149,6 +149,22 @@ namespace sand.Parsing {
                    select new TupleExpr(es) as Expr;
         }
 
+        private Parser<Expr> MatchExprParser() {
+            Parser<string> LCurl() => Expect("{").Trim();
+            Parser<string> RCurl() => Expect("}").Trim();
+            Parser<(Pattern, Expr)> Case() 
+                => from pat in PatternParser()
+                   from arrow in Expect("=>").Trim()
+                   from expr in ExprParser()
+                   select (pat, expr);
+
+            return from m in Expect("match").Trim()
+                   from lc in LCurl()
+                   from ps in List(Case())
+                   from rc in RCurl()
+                   select new MatchExpr(ps) as Expr;
+        }
+
         private Parser<Expr> ExprParser() {
             Parser<string> LParen() => Expect("(").Trim();
             Parser<string> RParen() => Expect(")").Trim();
@@ -170,6 +186,7 @@ namespace sand.Parsing {
 
             return Call()
                     .Or(TupleExprParser())
+                    .Or(MatchExprParser())
                     .Or(IntegerParser())
                     .Or(StrParser())
                     .Or(BoolParser())
