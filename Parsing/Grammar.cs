@@ -56,12 +56,12 @@ namespace sand.Parsing {
                 Parser<DefineConstructor> Empty() 
                     => from id in IdentifierParser()
                        where char.IsUpper(id[0])
-                       select new DefineConstructor(id, new string[0]);
+                       select new DefineConstructor(id, new SType[0]);
                 Parser<DefineConstructor> Paramed()
                     => from id in IdentifierParser()
                        where char.IsUpper(id[0])
                        from lp in LParen()
-                       from ps in List(IdentifierParser()) // upper or lower case because generic or specific types
+                       from ps in List(TypeParser()) 
                        from rp in RParen()
                        select new DefineConstructor(id, ps);
 

@@ -16,14 +16,14 @@ namespace sand.Parsing {
             };
         
         public static string Display(this TypeDefine input)
-            => $"type {input.name} = {input.constructors.Display(Display, "|")}";
+            => $"type {input.name} = {input.constructors.Display(Display, "|")};";
 
         public static string Display(this LetStatement input) 
             => $"{input.expr.Display()};";
 
         public static string Display(this DefineConstructor input) {
             if(input.parameters.Any()) {
-                return $" {input.name}( {input.parameters.Display(x => x)} ) ";
+                return $" {input.name}( {input.parameters.Display(Display)} ) ";
             }
             else {
                 return $" {input.name} ";
@@ -50,7 +50,7 @@ namespace sand.Parsing {
             => $" {input.name}< {input.parameters.Display(Display)} > ";
 
         public static string Display(this ArrowType input)
-            => $" {input.source} -> {input.destination} ";
+            => $" {input.source.Display()} -> {input.destination.Display()} ";
 
         public static string Display(this TupleType input) 
             => $" ( {input.parameters.Display(Display)} ) ";

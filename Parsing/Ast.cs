@@ -11,7 +11,7 @@ namespace sand.Parsing {
                             , IEnumerable<DefineConstructor> constructors
                             ) : TopLevel;
 
-    public record DefineConstructor(string name, IEnumerable<string> parameters);
+    public record DefineConstructor(string name, IEnumerable<SType> parameters);
 
     public interface SType { }
     public record SimpleType(string name) : SType;
