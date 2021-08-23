@@ -17,10 +17,10 @@ namespace sand.Parsing {
                 var result = target.Parse(input);
                 switch(result){
                     case Ok<T> o:
-                        Console.WriteLine("Parser Success");
+                        Console.WriteLine($"Parser Success: {o.Item}");
                         return o;
                     case Err<T> e:
-                        Console.WriteLine("Parser Failure");
+                        Console.WriteLine($"Parser Failure: {e.Error.Report()}");
                         return e;
                     default:
                         throw new Exception("Unexpected Result case");
