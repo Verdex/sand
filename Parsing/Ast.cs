@@ -6,7 +6,7 @@ using sand.Util;
 namespace sand.Parsing {
 
     public interface TopLevel { }
-    public record LetStatement(LetExpr expr) : TopLevel;
+    public record LetStatement(string variable, Option<SType> type, Expr value) : TopLevel;
     public record TypeDefine( string name
                             , IEnumerable<DefineConstructor> constructors
                             ) : TopLevel;

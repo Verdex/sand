@@ -77,10 +77,21 @@ namespace sand.Parsing {
                    select new TypeDefine(name, cons) as TopLevel;
         }
 
-        private Parser<TopLevel> LetStatementParser()
-            => from l in LetExprParser()
-               from semi in Expect(";").Trim()
-               select new LetStatement(l as LetExpr) as TopLevel;
+        private Parser<TopLevel> LetStatementParser() {
+            Parser<string> Colon() => Expect(":").Trim();
+            Parser<SType> LetType() 
+                => from c in Colon()
+                   from t in TypeParser().Debug("type")
+                   select t;
+
+            return from l in Expect("let").Trim()
+                   from variable in IdentifierParser()
+                   from type in LetType().Maybe()
+                   from e in Expect("=").Trim()
+                   from valueExpr in ExprParser()
+                   from semi in Expect(";").Trim()
+                   select new LetStatement(variable, type, valueExpr) as TopLevel;
+        }
 
         private Parser<Expr> IntegerParser()  
             => (from c in Any()
