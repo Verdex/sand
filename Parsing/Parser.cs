@@ -10,6 +10,23 @@ using static sand.Util.OptionEx;
 namespace sand.Parsing {
     public static class ParserEx {
 
+        public static Parser<T> Debug<T>(this Parser<T> target, string text) 
+            => new Parser<T>( input => {
+                var error = new ParseError($"Debug: {text}", input.Index, input.Index, input.Text);
+                Console.WriteLine(error.Report());
+                var result = target.Parse(input);
+                switch(result){
+                    case Ok<T> o:
+                        Console.WriteLine("Parser Success");
+                        return o;
+                    case Err<T> e:
+                        Console.WriteLine("Parser Failure");
+                        return e;
+                    default:
+                        throw new Exception("Unexpected Result case");
+                }
+            });
+
         public static Parser<T> Trim<T>(this Parser<T> target)  {
             static Parser<string> WS() 
                 => (from ws in Any() 
