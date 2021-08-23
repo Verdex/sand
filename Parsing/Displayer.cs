@@ -108,7 +108,7 @@ namespace sand.Parsing {
             => target.Select(x => display(x)).Join(sep);
 
         private static string Display<T>(this Option<T> target, Func<T, string> display)
-            => display switch {
+            => target switch {
                 Some<T> s  => display(s.Item),
                 None<T> n => "",
                 _ => throw new Exception("Unexpected Option case"),
