@@ -81,7 +81,7 @@ namespace sand.Parsing {
             Parser<string> Colon() => Expect(":").Trim();
             Parser<SType> LetType() 
                 => from c in Colon()
-                   from t in TypeParser().Debug("type")
+                   from t in TypeParser()
                    select t;
 
             return from l in Expect("let").Trim()
@@ -152,14 +152,14 @@ namespace sand.Parsing {
 
         private Parser<Expr> LetExprParser() {
             Parser<string> Colon() => Expect(":").Trim();
-            Parser<Option<SType>> LetType() 
-                => (from c in Colon()
+            Parser<SType> LetType() 
+                => from c in Colon()
                    from t in TypeParser()
-                   select t).Maybe();
+                   select t;
 
             return from l in Expect("let").Trim()
                    from variable in IdentifierParser()
-                   from type in LetType()
+                   from type in LetType().Maybe()
                    from e in Expect("=").Trim()
                    from valueExpr in ExprParser()
                    from i in Expect("in").Trim()
