@@ -89,7 +89,7 @@ namespace sand.Parsing {
             }
         } 
         public static string Display(this MatchExpr input) 
-            => $" match {input.expr.Display()} {{\n {input.patterns.Display(x => $" {x.Item1.Display()} => {x.Item2.Display()}\n")}}}";
+            => $" match {input.expr.Display()} {{\n {input.patterns.Display(x => $" {x.Item1.Display()} => {x.Item2.Display()}\n")},}}";
 
         public static string Display(this Pattern input) 
             => input switch {

@@ -38,14 +38,18 @@ namespace sand.Parsing {
         private Parser<IEnumerable<T>> List<T>(Parser<T> parser, string sep = ",") {
             Parser<char> Comma() => Expect(sep).Select(x => '\0').Trim();
 
-            Parser<T> TComma() 
-                => from t in parser.Trim()
-                   from comma in Comma().Trim()
-                   select t;
-            
-            return from ts in TComma().ZeroOrMore()
-                   from t in parser.Trim()
-                   select ts.Append(t);
+            Parser<T> Rest() 
+                => from c in Comma()
+                   from tr in parser
+                   select tr;
+
+            return from t in parser.Maybe()
+                   from ts in Rest().ZeroOrMore()
+                   select (t switch {
+                       Some<T> s => new T[] { s.Item },
+                       None<T> => new T[0],
+                       _ => throw new Exception("Unexpected Option case"),
+                   }).Concat(ts);
         }
 
         private Parser<TopLevel> TypeDefineParser() {
@@ -231,6 +235,7 @@ namespace sand.Parsing {
                    from expr in ExprParser()
                    from lc in LCurl()
                    from ps in List(Case())
+                   from c in Expect(",").Trim()
                    from rc in RCurl()
                    select new MatchExpr(expr, ps) as Expr;
         }
