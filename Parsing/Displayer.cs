@@ -19,7 +19,7 @@ namespace sand.Parsing {
             => $"type {input.name} = {input.constructors.Display(Display, "|")};";
 
         public static string Display(this LetStatement input) 
-            => $"let {input.variable} {input.type.Display( x => $" : {x.Display()}" )} = {input.value.Display()} \n";
+            => $"let {input.variable} {input.type.Display( x => $" : {x.Display()}" )} = {input.value.Display()}; \n";
 
         public static string Display(this DefineConstructor input) {
             if(input.parameters.Any()) {
