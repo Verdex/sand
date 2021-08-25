@@ -7,10 +7,16 @@ using sand.Util;
 using static sand.Parsing.ParserEx;
 using static sand.Util.ResultEx;
 using static sand.Util.OptionEx;
+using static sand.Util.UnitEx;
 
 namespace sand.Parsing {
 
     public static class Ext {
+
+        public static Parser<Unit> Punct(char c) 
+            => from v in Any()
+               where v == c
+               select Unit();
 
         public static Parser<T> Trim<T>(this Parser<T> target)  {
             static Parser<string> WS() 
