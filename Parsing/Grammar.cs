@@ -13,7 +13,7 @@ namespace sand.Parsing {
 
     public static class Ext {
 
-        public static Parser<Unit> Punct(char c) 
+        public static Parser<Unit> Punct(this char c) 
             => from v in Any()
                where v == c
                select Unit();
@@ -50,6 +50,9 @@ namespace sand.Parsing {
 
     public class Grammar {
 
+        private static Parser<Unit> LParen() => '('.Punct();
+        private static Parser<Unit> RParen() => ')'.Punct();
+
         public Result<IEnumerable<TopLevel>> Parse(string s) {
             var input = new Input(s);
 
@@ -75,8 +78,6 @@ namespace sand.Parsing {
         }
 
         private Parser<TopLevel> TypeDefineParser() {
-            Parser<string> LParen() => Expect("(").Trim();
-            Parser<string> RParen() => Expect(")").Trim();
 
             Parser<DefineConstructor> Constructor() {
                 Parser<DefineConstructor> Empty() 
@@ -219,8 +220,6 @@ namespace sand.Parsing {
         }
 
         private Parser<Expr> ConstructorExprParser() {
-            Parser<string> LParen() => Expect("(").Trim();
-            Parser<string> RParen() => Expect(")").Trim();
             Parser<Expr> ParamConstructor() 
                 => from id in IdentifierParser()
                    where char.IsUpper(id[0])
@@ -236,15 +235,11 @@ namespace sand.Parsing {
             return ParamConstructor().Or(EmptyConstructor()); 
         }
 
-        private Parser<Expr> TupleExprParser() {
-            Parser<string> LParen() => Expect("(").Trim();
-            Parser<string> RParen() => Expect(")").Trim();
-
-            return from lp in LParen()
-                   from es in ExprParser().List()
-                   from rp in RParen()
-                   select new TupleExpr(es) as Expr;
-        }
+        private Parser<Expr> TupleExprParser() 
+            => from lp in LParen()
+               from es in ExprParser().List()
+               from rp in RParen()
+               select new TupleExpr(es) as Expr;
 
         private Parser<Expr> MatchExprParser() {
             Parser<string> LCurl() => Expect("{").Trim();
@@ -265,9 +260,6 @@ namespace sand.Parsing {
         }
 
         private Parser<Expr> ExprParser() {
-            Parser<string> LParen() => Expect("(").Trim();
-            Parser<string> RParen() => Expect(")").Trim();
-
             Parser<Expr> Call() {
                 Parser<Expr> Callables() 
                     // The TupleExpr includes just paren expr
@@ -301,8 +293,6 @@ namespace sand.Parsing {
                 => from id in IdentifierParser()
                    where char.IsLower(id[0])
                    select new VariablePattern(id) as Pattern;
-            Parser<string> LParen() => Expect("(").Trim();
-            Parser<string> RParen() => Expect(")").Trim();
             Parser<Pattern> ParamConstructor() 
                 => from id in IdentifierParser()
                    where char.IsUpper(id[0])
@@ -328,8 +318,6 @@ namespace sand.Parsing {
                    select new GenericType(id) as SType;
 
             Parser<SType> TupleType() {
-                Parser<char> LParen() => Expect("(").Select(x => '\0').Trim();
-                Parser<char> RParen() => Expect(")").Select(x => '\0').Trim();
                 Parser<IEnumerable<SType>> Types() 
                     => from ts in TypeParser().List()
                        select ts;
