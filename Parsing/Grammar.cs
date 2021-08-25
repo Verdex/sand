@@ -19,14 +19,14 @@ namespace sand.Parsing {
                select Unit();
 
         public static Parser<T> Trim<T>(this Parser<T> target)  {
-            static Parser<string> WS() 
-                => (from ws in Any() 
-                where char.IsWhiteSpace(ws)
-                select ws).ZeroOrMore().Select(x => "");
+            static Parser<Unit> WS() 
+                => from ws in Any() 
+                   where char.IsWhiteSpace(ws)
+                   select Unit();
             
-            return from ws1 in WS()
+            return from ws1 in WS().ZeroOrMore()
                 from t in target
-                from ws2 in WS()
+                from ws2 in WS().ZeroOrMore()
                 select t;
         }
 
