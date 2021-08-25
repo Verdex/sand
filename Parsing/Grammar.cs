@@ -9,6 +9,22 @@ using static sand.Util.ResultEx;
 using static sand.Util.OptionEx;
 
 namespace sand.Parsing {
+    public static class Ext {
+
+        public static Parser<T> Trim<T>(this Parser<T> target)  {
+            static Parser<string> WS() 
+                => (from ws in Any() 
+                where char.IsWhiteSpace(ws)
+                select ws).ZeroOrMore().Select(x => "");
+            
+            return from ws1 in WS()
+                from t in target
+                from ws2 in WS()
+                select t;
+        }
+
+    }
+
     public class Grammar {
 
         public Result<IEnumerable<TopLevel>> Parse(string s) {

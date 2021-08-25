@@ -27,18 +27,6 @@ namespace sand.Parsing {
                 }
             });
 
-        public static Parser<T> Trim<T>(this Parser<T> target)  {
-            static Parser<string> WS() 
-                => (from ws in Any() 
-                   where char.IsWhiteSpace(ws)
-                   select ws).ZeroOrMore().Select(x => "");
-            
-            return from ws1 in WS()
-                   from t in target
-                   from ws2 in WS()
-                   select t;
-        }
-
         public static Parser<char> Any() 
             => new Parser<char>(input => input.GetChar() switch {
                 Some<char> c => Ok(c.Item),
