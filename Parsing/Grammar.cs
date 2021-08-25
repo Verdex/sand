@@ -31,10 +31,10 @@ namespace sand.Parsing {
         }
 
         public static Parser<IEnumerable<T>> List<T>(this Parser<T> parser, string sep = ",") {
-            Parser<char> Comma() => Expect(sep).Select(x => '\0').Trim();
+            Parser<Unit> Sep() => Expect(sep).Select(x => Unit()).Trim();
 
             Parser<T> Rest() 
-                => from c in Comma()
+                => from c in Sep()
                    from tr in parser
                    select tr;
 
