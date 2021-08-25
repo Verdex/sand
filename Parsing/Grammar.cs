@@ -207,7 +207,9 @@ namespace sand.Parsing {
                    from rp in RParen()
                    select new ConstructorExpr(id, es) as Expr;
             Parser<Expr> EmptyConstructor() 
-                => IdentifierParser().Select( id => new ConstructorExpr(id, new Expr[0]) as Expr );
+                => from id in IdentifierParser()
+                   where char.IsUpper(id[0])
+                   select new ConstructorExpr(id, new Expr[0]) as Expr;
 
             return ParamConstructor().Or(EmptyConstructor()); 
         }
@@ -254,7 +256,7 @@ namespace sand.Parsing {
 
                 return from e in Callables()
                        from lp in LParen()
-                       from parameters in ExprParser().ZeroOrMore()
+                       from parameters in List(ExprParser())
                        from rp in RParen()
                        select new CallExpr(e, parameters) as Expr;
             }
