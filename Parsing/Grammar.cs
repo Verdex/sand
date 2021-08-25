@@ -14,9 +14,9 @@ namespace sand.Parsing {
     public static class Ext {
 
         public static Parser<Unit> Punct(this char c) 
-            => from v in Any()
+            => (from v in Any()
                where v == c
-               select Unit();
+               select Unit()).Trim();
 
         public static Parser<T> Trim<T>(this Parser<T> target)  {
             static Parser<Unit> WS() 
@@ -52,6 +52,9 @@ namespace sand.Parsing {
 
         private static Parser<Unit> LParen() => '('.Punct();
         private static Parser<Unit> RParen() => ')'.Punct();
+        private static Parser<Unit> Colon() => ':'.Punct();
+        private static Parser<Unit> OrBar() => '|'.Punct();
+        private static Parser<Unit> Arrow() => Expect("->").Trim().Select(x => Unit());
 
         public Result<IEnumerable<TopLevel>> Parse(string s) {
             var input = new Input(s);
@@ -105,7 +108,6 @@ namespace sand.Parsing {
         }
 
         private Parser<TopLevel> LetStatementParser() {
-            Parser<string> Colon() => Expect(":").Trim();
             Parser<SType> LetType() 
                 => from c in Colon()
                    from t in TypeParser()
@@ -178,7 +180,6 @@ namespace sand.Parsing {
                select new Variable(id) as Expr;
 
         private Parser<Expr> LetExprParser() {
-            Parser<string> Colon() => Expect(":").Trim();
             Parser<SType> LetType() 
                 => from c in Colon()
                    from t in TypeParser()
@@ -195,9 +196,6 @@ namespace sand.Parsing {
         }
 
         private Parser<Expr> LambdaExprParser() {
-            Parser<string> OrBar() => Expect("|").Trim();
-            Parser<string> Colon() => Expect(":").Trim();
-            Parser<string> Arrow() => Expect("->").Trim();
             Parser<SType> ArrowType() 
                 => from a in Arrow()
                    from t in TypeParser()
@@ -326,8 +324,6 @@ namespace sand.Parsing {
                        from rp in RParen()
                        select new TupleType(ts) as SType;
             }
-
-            Parser<char> Arrow() => Expect("->").Select(x => '\0').Trim();
 
             Parser<SType> Index() {
                 Parser<char> LAngle() => Expect("<").Select(x => '\0').Trim();
