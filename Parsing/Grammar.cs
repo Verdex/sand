@@ -54,6 +54,15 @@ namespace sand.Parsing {
         private static Parser<Unit> RParen() => ')'.Punct();
         private static Parser<Unit> Colon() => ':'.Punct();
         private static Parser<Unit> OrBar() => '|'.Punct();
+        private static Parser<Unit> Comma() => ','.Punct();
+        private static Parser<Unit> LCurl() => '{'.Punct();
+        private static Parser<Unit> RCurl() => '}'.Punct();
+        private static Parser<Unit> LAngle() => '<'.Punct();
+        private static Parser<Unit> RAngle() => '>'.Punct();
+        private static Parser<Unit> Equal() => '='.Punct();
+        private static Parser<Unit> SemiColon() => ';'.Punct();
+        private static Parser<Unit> DoubleQuote() => '"'.Punct();
+        private static Parser<Unit> DoubleArrow() => Expect("=>").Trim().Select(x => Unit());
         private static Parser<Unit> Arrow() => Expect("->").Trim().Select(x => Unit());
 
         public Result<IEnumerable<TopLevel>> Parse(string s) {
@@ -101,9 +110,9 @@ namespace sand.Parsing {
             return from t in Expect("type").Trim()
                    from name in IdentifierParser()
                    where char.IsUpper(name[0])
-                   from e in Expect("=").Trim()
+                   from e in Equal()
                    from cons in Constructor().List("|")
-                   from semi in Expect(";").Trim()
+                   from semi in SemiColon() 
                    select new TypeDefine(name, cons) as TopLevel;
         }
 
@@ -116,9 +125,9 @@ namespace sand.Parsing {
             return from l in Expect("let").Trim()
                    from variable in IdentifierParser()
                    from type in LetType().Maybe()
-                   from e in Expect("=").Trim()
+                   from e in Equal() 
                    from valueExpr in ExprParser()
-                   from semi in Expect(";").Trim()
+                   from semi in SemiColon() 
                    select new LetStatement(variable, type, valueExpr) as TopLevel;
         }
 
@@ -156,9 +165,9 @@ namespace sand.Parsing {
                    where c != '"'
                    select c;
 
-            return (from q1 in Expect("\"")
+            return (from q1 in DoubleQuote() 
                    from cs in EscapeParser().Or(NotQuote()).ZeroOrMore()
-                   from q2 in Expect("\"")
+                   from q2 in DoubleQuote() 
                    select new Str(new string(cs.ToArray())) as Expr).Trim();
         }
 
@@ -188,7 +197,7 @@ namespace sand.Parsing {
             return from l in Expect("let").Trim()
                    from variable in IdentifierParser()
                    from type in LetType().Maybe()
-                   from e in Expect("=").Trim()
+                   from e in Equal() 
                    from valueExpr in ExprParser()
                    from i in Expect("in").Trim()
                    from bodyExpr in ExprParser()
@@ -240,11 +249,9 @@ namespace sand.Parsing {
                select new TupleExpr(es) as Expr;
 
         private Parser<Expr> MatchExprParser() {
-            Parser<string> LCurl() => Expect("{").Trim();
-            Parser<string> RCurl() => Expect("}").Trim();
             Parser<(Pattern, Expr)> Case() 
                 => from pat in PatternParser()
-                   from arrow in Expect("=>").Trim()
+                   from arrow in DoubleArrow() 
                    from expr in ExprParser()
                    select (pat, expr);
 
@@ -252,7 +259,7 @@ namespace sand.Parsing {
                    from expr in ExprParser()
                    from lc in LCurl()
                    from ps in Case().List()
-                   from c in Expect(",").Trim()
+                   from c in Comma() 
                    from rc in RCurl()
                    select new MatchExpr(expr, ps) as Expr;
         }
@@ -326,8 +333,6 @@ namespace sand.Parsing {
             }
 
             Parser<SType> Index() {
-                Parser<char> LAngle() => Expect("<").Select(x => '\0').Trim();
-                Parser<char> RAngle() => Expect(">").Select(x => '\0').Trim();
 
                 return (from id in IdentifierParser()
                    where char.IsUpper(id[0])
