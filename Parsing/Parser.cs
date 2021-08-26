@@ -33,6 +33,19 @@ namespace sand.Parsing {
                 None<char> => Err<char>(new EndOfFileError()),
                 _ => throw new Exception("Unexpected Option case")
             });
+        
+        public static Parser<char> Peek() 
+            => new Parser<char>(input => {
+                var rp = input.CreateRestore();
+                var mc = input.GetChar();
+                input.Restore(rp);
+
+                return mc switch {
+                    Some<char> c => Ok(c.Item),
+                    None<char> => Err<char>(new EndOfFileError()),
+                    _ => throw new Exception("Unexpected Option case")
+                };
+            }); 
 
         public static Parser<string> Expect(string s) 
             => new Parser<string>(input => input.Expect(s));

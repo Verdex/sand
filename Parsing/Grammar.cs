@@ -12,23 +12,27 @@ using static sand.Util.UnitEx;
 namespace sand.Parsing {
 
     public static class Ext {
+        private static Parser<Unit> WS() 
+            => from ws in Any() 
+                where char.IsWhiteSpace(ws)
+                select Unit();
+
+        public static Parser<Unit> Sym(this string s) 
+            => from sym in Expect(s).Trim()
+               from next in Peek() 
+               where char.IsLetterOrDigit(next) || next == '_'
+               select Unit();
 
         public static Parser<Unit> Punct(this char c) 
             => (from v in Any()
                where v == c
                select Unit()).Trim();
 
-        public static Parser<T> Trim<T>(this Parser<T> target)  {
-            static Parser<Unit> WS() 
-                => from ws in Any() 
-                   where char.IsWhiteSpace(ws)
-                   select Unit();
-            
-            return from ws1 in WS().ZeroOrMore()
-                from t in target
-                from ws2 in WS().ZeroOrMore()
-                select t;
-        }
+        public static Parser<T> Trim<T>(this Parser<T> target) 
+            => from ws1 in WS().ZeroOrMore()
+               from t in target
+               from ws2 in WS().ZeroOrMore()
+               select t;
 
         public static Parser<IEnumerable<T>> List<T>(this Parser<T> parser, string sep = ",") {
             Parser<Unit> Sep() => Expect(sep).Select(x => Unit()).Trim();
