@@ -18,9 +18,11 @@ namespace sand.Parsing {
                 select Unit();
 
         public static Parser<Unit> Sym(this string s) 
-            => from sym in Expect(s).Trim()
+            => from ws1 in WS().ZeroOrMore() 
+               from sym in Expect(s)
                from next in Peek() 
                where char.IsLetterOrDigit(next) || next == '_'
+               from ws2 in WS().ZeroOrMore()
                select Unit();
 
         public static Parser<Unit> Punct(this char c) 
