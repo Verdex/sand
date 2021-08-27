@@ -21,7 +21,7 @@ namespace sand.Parsing {
             => from ws1 in WS().ZeroOrMore() 
                from sym in Expect(s)
                from next in Peek() 
-               where char.IsLetterOrDigit(next) || next == '_'
+               where !char.IsLetterOrDigit(next) && next != '_'
                from ws2 in WS().ZeroOrMore()
                select Unit();
 
@@ -70,6 +70,9 @@ namespace sand.Parsing {
         private static Parser<Unit> DoubleQuote() => '"'.Punct();
         private static Parser<Unit> DoubleArrow() => Expect("=>").Trim().Select(x => Unit());
         private static Parser<Unit> Arrow() => Expect("->").Trim().Select(x => Unit());
+        private static Parser<Unit> In() => "in".Sym();
+        private static Parser<Unit> Let() => "let".Sym();
+        private static Parser<Unit> Type() => "type".Sym();
 
         public Result<IEnumerable<TopLevel>> Parse(string s) {
             var input = new Input(s);
@@ -113,7 +116,7 @@ namespace sand.Parsing {
                 return Paramed().Or(Empty());
             }
 
-            return from t in Expect("type").Trim()
+            return from t in Type()
                    from name in IdentifierParser()
                    where char.IsUpper(name[0])
                    from e in Equal()
@@ -128,7 +131,7 @@ namespace sand.Parsing {
                    from t in TypeParser()
                    select t;
 
-            return from l in Expect("let").Trim()
+            return from l in Let()
                    from variable in IdentifierParser()
                    from type in LetType().Maybe()
                    from e in Equal() 
@@ -200,12 +203,12 @@ namespace sand.Parsing {
                    from t in TypeParser()
                    select t;
 
-            return from l in Expect("let").Trim()
+            return from l in Let()
                    from variable in IdentifierParser()
                    from type in LetType().Maybe()
                    from e in Equal() 
                    from valueExpr in ExprParser()
-                   from i in Expect("in").Trim()
+                   from i in In()
                    from bodyExpr in ExprParser()
                    select new LetExpr(variable, type, valueExpr, bodyExpr) as Expr;
         }
