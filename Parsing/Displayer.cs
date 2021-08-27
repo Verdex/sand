@@ -72,7 +72,7 @@ namespace sand.Parsing {
 
         public static string Display(this Integer input) => $" {input.i} ";
         public static string Display(this Str input) => $" \"{input.s}\" ";
-        public static string Display(this Bool input) => $" {input.b} ";
+        public static string Display(this Bool input) => $" {input.b} ".ToLower();
         public static string Display(this Variable input) => $" {input.name} ";
         public static string Display(this TupleExpr input) => $" ( {input.parameters.Display(Display)} ) ";
         public static string Display(this LetExpr input) 
