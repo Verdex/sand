@@ -180,6 +180,9 @@ namespace sand.Parsing {
                    select new Str(new string(cs.ToArray())) as Expr).Trim();
         }
 
+        // TODO create TypeId, ConstructorId, GenericTypeId, VariableId, (others?) parsers
+        // NOTE shouldn't have to use the sym trick because these items continue to grab characters until 
+        // we hit punctuation (more or less) 
         private Parser<string> IdentifierParser() {
             static Parser<char> Rest() 
                 => from c in Any()
