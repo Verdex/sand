@@ -16,7 +16,41 @@ namespace sand
             var g = new Grammar();
             var x = g.Parse(@"
 
-let x = 5 in print(x);
+type List = Cons(a, List<a>)
+          | Nil
+          ;
+
+let x : Int = 4;
+
+let count : List<a> -> Int = | list : List<a> | -> Int 
+    match list {
+        Cons(_, rest) => inc(count(rest)),
+        Nil => zero(),
+    }
+    ;
+
+let z = Cons( 1, NIL );
+
+let ww = | h | h ;
+
+let www = ""blarg"";
+
+let u : (Int, Int, Int) = (1, 2, 3);
+
+let g = 
+    let q = 5 in
+    let i = 6 in
+    add(q, i);
+
+let e =
+    let j : Int = 5 in
+    j;
+
+
+let blahs : List< a -> List<Int> > = NIL;
+
+let b = true;
+let b2 = false;
 
             ");
 
