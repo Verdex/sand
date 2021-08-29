@@ -102,12 +102,10 @@ namespace sand.Parsing {
 
             Parser<DefineConstructor> Constructor() {
                 Parser<DefineConstructor> Empty() 
-                    => from id in IdentifierParser()
-                       where char.IsUpper(id[0])
+                    => from id in ConstructorIdParser()
                        select new DefineConstructor(id, new SType[0]);
                 Parser<DefineConstructor> Paramed()
-                    => from id in IdentifierParser()
-                       where char.IsUpper(id[0])
+                    => from id in ConstructorIdParser()
                        from lp in LParen()
                        from ps in TypeParser().List()
                        from rp in RParen()
@@ -117,8 +115,7 @@ namespace sand.Parsing {
             }
 
             return from t in Type()
-                   from name in IdentifierParser()
-                   where char.IsUpper(name[0])
+                   from name in TypeIdParser()
                    from e in Equal()
                    from cons in Constructor().List("|")
                    from semi in SemiColon() 
@@ -132,7 +129,7 @@ namespace sand.Parsing {
                    select t;
 
             return from l in Let()
-                   from variable in IdentifierParser()
+                   from variable in VariableIdParser()
                    from type in LetType().Maybe()
                    from e in Equal() 
                    from valueExpr in ExprParser()
@@ -183,21 +180,57 @@ namespace sand.Parsing {
         // TODO create TypeId, ConstructorId, GenericTypeId, VariableId, (others?) parsers
         // NOTE shouldn't have to use the sym trick because these items continue to grab characters until 
         // we hit punctuation (more or less) 
-        private Parser<string> IdentifierParser() {
+
+        private Parser<string> TypeIdParser() {
             static Parser<char> Rest() 
                 => from c in Any()
-                   where Char.IsLetterOrDigit(c) || c == '_'
+                   where char.IsLetterOrDigit(c)  
                    select c;
 
             return (from first in Any()
-                   where first == '_' || Char.IsLetter(first)
+                   where char.IsLetter(first) && char.IsUpper(first)
+                   from rest in Rest().ZeroOrMore()
+                   select new string(rest.Prepend(first).ToArray())).Trim();
+        }
+
+        private Parser<string> GenericTypeIdParser() {
+            static Parser<char> Rest() 
+                => from c in Any()
+                   where char.IsLetterOrDigit(c) 
+                   select c;
+
+            return (from first in Any()
+                   where char.IsLetter(first) && char.IsLower(first)
+                   from rest in Rest().ZeroOrMore()
+                   select new string(rest.Prepend(first).ToArray())).Trim();
+        }
+
+        private Parser<string> ConstructorIdParser() {
+            static Parser<char> Rest() 
+                => from c in Any()
+                   where char.IsLetterOrDigit(c) 
+                   select c;
+
+            return (from first in Any()
+                   where char.IsLetter(first) && char.IsUpper(first)
+                   from rest in Rest().ZeroOrMore()
+                   select new string(rest.Prepend(first).ToArray())).Trim();
+        }
+
+        private Parser<string> VariableIdParser() {
+            static Parser<char> Rest() 
+                => from c in Any()
+                   where char.IsLetterOrDigit(c) || c == '_'
+                   select c;
+
+            return (from first in Any()
+                   where first == '_' || (char.IsLetter(first) && char.IsLower(first))
                    from rest in Rest().ZeroOrMore()
                    select new string(rest.Prepend(first).ToArray())).Trim();
         }
 
         private Parser<Expr> VarParser() 
-            => from id in IdentifierParser()
-               where char.IsLower(id[0])
+            => from id in VariableIdParser()
                select new Variable(id) as Expr;
 
         private Parser<Expr> LetExprParser() {
@@ -207,7 +240,7 @@ namespace sand.Parsing {
                    select t;
 
             return from l in Let()
-                   from variable in IdentifierParser()
+                   from variable in VariableIdParser()
                    from type in LetType().Maybe()
                    from e in Equal() 
                    from valueExpr in ExprParser()
@@ -226,7 +259,7 @@ namespace sand.Parsing {
                    from t in TypeParser()
                    select t;
             Parser<(string, Option<SType>)> Parameter() 
-                => from id in IdentifierParser()
+                => from id in VariableIdParser()
                    from t in ColonType().Maybe()
                    select (id, t);
 
@@ -240,14 +273,13 @@ namespace sand.Parsing {
 
         private Parser<Expr> ConstructorExprParser() {
             Parser<Expr> ParamConstructor() 
-                => from id in IdentifierParser()
-                   where char.IsUpper(id[0])
+                => from id in ConstructorIdParser()
                    from lp in LParen()
                    from es in ExprParser().List()
                    from rp in RParen()
                    select new ConstructorExpr(id, es) as Expr;
             Parser<Expr> EmptyConstructor() 
-                => from id in IdentifierParser()
+                => from id in ConstructorIdParser()
                    where char.IsUpper(id[0])
                    select new ConstructorExpr(id, new Expr[0]) as Expr;
 
@@ -307,31 +339,27 @@ namespace sand.Parsing {
         private Parser<Pattern> PatternParser() {
             Parser<Pattern> WildCardParser() => Expect("_").Trim().Select( x => new WildCard() as Pattern);
             Parser<Pattern> VariableParser() 
-                => from id in IdentifierParser()
-                   where char.IsLower(id[0])
+                => from id in VariableIdParser()
                    select new VariablePattern(id) as Pattern;
             Parser<Pattern> ParamConstructor() 
-                => from id in IdentifierParser()
-                   where char.IsUpper(id[0])
+                => from id in ConstructorIdParser()
                    from lp in LParen()
                    from ps in PatternParser().List()
                    from rp in RParen()
                    select new ConstructorPattern(id, ps) as Pattern;
             Parser<Pattern> EmptyConstructor() 
-                => IdentifierParser().Select( id => new ConstructorPattern(id, new Pattern[0]) as Pattern);
+                => ConstructorIdParser().Select( id => new ConstructorPattern(id, new Pattern[0]) as Pattern);
                 
             return WildCardParser().Or(VariableParser()).Or(ParamConstructor()).Or(EmptyConstructor());
         }
 
         private Parser<SType> TypeParser() {
             Parser<SType> SimpleType() 
-                => from id in IdentifierParser()
-                   where char.IsUpper(id[0])
+                => from id in TypeIdParser()
                    select new SimpleType(id) as SType;
             
             Parser<SType> GenericType() 
-                => from id in IdentifierParser()
-                   where char.IsLower(id[0]) 
+                => from id in GenericTypeIdParser()
                    select new GenericType(id) as SType;
 
             Parser<SType> TupleType() {
@@ -346,8 +374,7 @@ namespace sand.Parsing {
 
             Parser<SType> Index() {
 
-                return (from id in IdentifierParser()
-                   where char.IsUpper(id[0])
+                return (from id in TypeIdParser()
                    from la in LAngle()
                    from ts in TypeParser().List()
                    from ra in RAngle()
