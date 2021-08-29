@@ -73,6 +73,8 @@ namespace sand.Parsing {
         private static Parser<Unit> In() => "in".Sym();
         private static Parser<Unit> Let() => "let".Sym();
         private static Parser<Unit> Type() => "type".Sym();
+        private static Parser<bool> False() => "false".Sym().Select( x => false );
+        private static Parser<bool> True() => "true".Sym().Select( x => true );
 
         public Result<IEnumerable<TopLevel>> Parse(string s) {
             var input = new Input(s);
@@ -147,7 +149,7 @@ namespace sand.Parsing {
                         .Trim();
 
         private Parser<Expr> BoolParser() 
-            => Expect("false").Or(Expect("true")).Select(str => new Bool(str == "true") as Expr).Trim();
+            => False().Or(True()).Select(v => new Bool(v) as Expr).Trim();
 
         private Parser<Expr> StrParser() {
             static Parser<char> EscapeParser() 
@@ -176,10 +178,6 @@ namespace sand.Parsing {
                    from q2 in DoubleQuote() 
                    select new Str(new string(cs.ToArray())) as Expr).Trim();
         }
-
-        // TODO create TypeId, ConstructorId, GenericTypeId, VariableId, (others?) parsers
-        // NOTE shouldn't have to use the sym trick because these items continue to grab characters until 
-        // we hit punctuation (more or less) 
 
         private Parser<string> TypeIdParser() {
             static Parser<char> Rest() 
