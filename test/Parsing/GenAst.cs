@@ -53,15 +53,21 @@ namespace test.Parsing {
             => from es in GenExpr().ZeroOrMore()
                select new TupleExpr(es) as Expr;
 
-        //public static NoiseGenerator<Expr> GenLet() 
-         //   => from varId in GenVariableId()
-
+        public static NoiseGenerator<Expr> GenLet() 
+            => from varId in GenVariableId()
+               from type in GenType().Maybe()
+               from value in GenExpr()
+               from body in GenExpr()
+               select new LetExpr(varId, type, value, body) as Expr;
 
         public static NoiseGenerator<Expr> GenExpr() 
             => Or( GenVariable()
                  , GenString()
                  , GenBool()
                  , GenInt()
+                 , GenVariable()
+                 , GenTuple()
+                 , GenLet()
                  );
 
         public static NoiseGenerator<SType> GenSimpleType()
