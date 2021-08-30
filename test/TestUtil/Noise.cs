@@ -64,7 +64,7 @@ namespace test.TestUtil {
             return new NoiseGenerator<IEnumerable<T>>( noise => F(noise, target).ToArray() );
         }
 
-        private static NoiseGenerator<IEnumerable<T>> ZeroOrMore<T>(this NoiseGenerator<T> target) {
+        public static NoiseGenerator<IEnumerable<T>> ZeroOrMore<T>(this NoiseGenerator<T> target) {
             static IEnumerable<T> F(Noise noise, NoiseGenerator<T> target) {
                 var i = noise.Max(Length) + 1;
                 while(i >= 1) {
