@@ -15,7 +15,7 @@ namespace test.TestUtil {
 
         public ulong InRange(ulong min, ulong max) {
             var m = (max - min) + 1;
-            return seed % m + min;
+            return this.Any() % m + min;
         }
 
         public ulong Max(ulong max) => InRange(0, max);
