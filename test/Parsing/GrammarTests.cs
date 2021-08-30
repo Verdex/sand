@@ -24,7 +24,7 @@ namespace test.Parsing
         {
             var n = new Noise(17);
 
-            _output.WriteLine(GenAst.GenConstructorId().Gen(n));
+            //_output.WriteLine(GenAst.GenConstructorId().Gen(n));
 
             var g = new Grammar();
 

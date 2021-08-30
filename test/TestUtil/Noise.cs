@@ -3,6 +3,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
+using sand.Util;
+using static sand.Util.OptionEx;
+
 namespace test.TestUtil {
     public record Noise(ulong seed) {
 
@@ -48,6 +51,8 @@ namespace test.TestUtil {
                 return final(a, b);
             });
 
+        public static NoiseGenerator<T> GenConst<T>(this T item) => new NoiseGenerator<T>( noise => item );
+
         public static NoiseGenerator<T> Or<T>(params NoiseGenerator<T>[] targets) 
             => new NoiseGenerator<T>(noise => targets[noise.Max((ulong)targets.Length - 1)].Gen(noise.Next()));
 
@@ -76,5 +81,9 @@ namespace test.TestUtil {
 
             return new NoiseGenerator<IEnumerable<T>>( noise => F(noise, target).ToArray() );
         }
+
+        public static NoiseGenerator<Option<T>> Maybe<T>(this NoiseGenerator<T> target) 
+            => Or(target.Select(t => Some(t)), None<T>().GenConst());
+                
     }
 }
