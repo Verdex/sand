@@ -54,7 +54,6 @@ namespace test.Parsing {
         public static NoiseGenerator<Expr> GenTuple() 
             => from es in GenExpr().ZeroOrMore()
                select new TupleExpr(es) as Expr;
-        
 
         public static NoiseGenerator<Expr> GenExpr() 
             => Or( GenVariable()
@@ -63,5 +62,34 @@ namespace test.Parsing {
                  , GenInt()
                  );
 
+        public static NoiseGenerator<SType> GenSimpleType()
+            => from id in GenTypeId()
+               select new SimpleType(id) as SType;
+
+        public static NoiseGenerator<SType> GenGenericType() 
+            => from id in GenGenericTypeId()
+               select new GenericType(id) as SType;
+
+        public static NoiseGenerator<SType> GenIndexedType()
+            => from id in GenTypeId()
+               from types in GenType().OneOrMore()
+               select new IndexedType(id, types) as SType;
+
+        public static NoiseGenerator<SType> GenArrowType()
+            => from source in GenType()
+               from destination in GenType()
+               select new ArrowType(source, destination) as SType;
+
+        public static NoiseGenerator<SType> GenTupleType() 
+            => from parameters in GenType().ZeroOrMore()
+               select new TupleType(parameters) as SType;
+
+        public static NoiseGenerator<SType> GenType() 
+            => Or( GenSimpleType() 
+                 , GenGenericType()
+                 , GenIndexedType()
+                 , GenArrowType()
+                 , GenTupleType()
+                 );
     }
 }
