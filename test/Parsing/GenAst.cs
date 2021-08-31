@@ -7,6 +7,8 @@ using test.TestUtil;
 using static test.TestUtil.NoiseGeneratorEx;
 
 using sand.Parsing;
+using sand.Util;
+using static sand.Util.OptionEx;
 
 namespace test.Parsing {
 
@@ -60,6 +62,39 @@ namespace test.Parsing {
                from body in GenExpr()
                select new LetExpr(varId, type, value, body) as Expr;
 
+        public static NoiseGenerator<Expr> GenLambda() {
+            static NoiseGenerator<(string, Option<SType>)> GenParameter() 
+                => from id in GenVariableId()
+                   from type in GenType().Maybe()
+                   select (id, type);
+
+            return from parameters in GenParameter().ZeroOrMore()
+                   from retType in GenType().Maybe()
+                   from body in GenExpr()
+                   select new LambdaExpr(parameters, retType, body) as Expr;
+        }
+
+        public static NoiseGenerator<Expr> GenCall() 
+            => from f in Or(GenTuple(), GenVariable())
+               from parameters in GenExpr().ZeroOrMore()
+               select new CallExpr(f, parameters) as Expr;
+
+        public static NoiseGenerator<Expr> GenConstructor() 
+            => from id in GenConstructorId()
+               from parameters in GenExpr().ZeroOrMore()
+               select new ConstructorExpr(id, parameters) as Expr;
+
+        public static NoiseGenerator<Expr> GenMatch() {
+            static NoiseGenerator<(Pattern, Expr)> GenCase() 
+                => from p in GenPattern()
+                   from e in GenExpr()
+                   select (p, e);
+
+            return from e in GenExpr()
+                   from cases in GenCase().OneOrMore()
+                   select new MatchExpr(e, cases) as Expr;
+        }
+
         public static NoiseGenerator<Expr> GenExpr() 
             => Or( GenVariable()
                  , GenString()
@@ -68,6 +103,25 @@ namespace test.Parsing {
                  , GenVariable()
                  , GenTuple()
                  , GenLet()
+                 , GenLambda()
+                 , GenCall()
+                 , GenConstructor()
+                 , GenMatch()
+                 );
+
+        public static NoiseGenerator<Pattern> GenVariablePattern() 
+            => from id in GenVariableId()
+               select new VariablePattern(id) as Pattern;
+
+        public static NoiseGenerator<Pattern> GenConstructorPattern()
+            => from id in GenConstructorId()
+               from parameters in GenPattern().OneOrMore()
+               select new ConstructorPattern(id, parameters) as Pattern;
+
+        public static NoiseGenerator<Pattern> GenPattern() 
+            => Or( (new WildCard() as Pattern).GenConst()
+                 , GenVariablePattern()
+                 , GenConstructorPattern()
                  );
 
         public static NoiseGenerator<SType> GenSimpleType()
