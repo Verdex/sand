@@ -153,5 +153,27 @@ namespace test.Parsing {
                  , GenArrowType()
                  , GenTupleType()
                  );
+
+        public static NoiseGenerator<TopLevel> GenLetStatement() 
+            => from id in GenVariableId()
+               from type in GenType().Maybe()
+               from body in GenExpr()
+               select new LetStatement(id, type, body) as TopLevel;
+
+        public static NoiseGenerator<TopLevel> GenTypeDefine() {
+            static NoiseGenerator<DefineConstructor> GenCon()
+                => from id in GenConstructorId()
+                   from ps in GenType().ZeroOrMore()
+                   select new DefineConstructor(id, ps);
+            
+            return from id in GenTypeId()
+                   from cons in GenCon().ZeroOrMore()
+                   select new TypeDefine(id, cons) as TopLevel;
+        }
+
+        public static NoiseGenerator<TopLevel> GenTopLevel()
+            => Or( GenLetStatement()
+                 , GenTypeDefine()
+                 );
     }
 }
