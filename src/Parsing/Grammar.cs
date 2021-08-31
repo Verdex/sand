@@ -265,7 +265,7 @@ namespace sand.Parsing {
                    select (id, t);
 
             return from o1 in OrBar()
-                   from parameters in Parameter().ZeroOrMore()
+                   from parameters in Parameter().List()
                    from o2 in OrBar()
                    from returnType in ArrowType().Maybe()
                    from expr in ExprParser()

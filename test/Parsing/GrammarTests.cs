@@ -23,12 +23,31 @@ namespace test.Parsing
             _output = output;
         }
 
+        [Theory]
+        [InlineData("let x : Y<a> -> a = ();")]
+        [InlineData("let x : Y<Z<a>> = ();")]
+        [InlineData("let x = | _ | \"\";")]
+        [InlineData("let x = 123456;")]
+        [InlineData("let x = | | ();")]
+        [InlineData("let x = | w, y | ();")]
+        [InlineData("let x = | w : (a, b) | ();")]
+        [InlineData("let x = | w : (a, b), xyz | ();")]
+        public void ShouldHandleSingleTopLevelItem(string input) {
+            var g = new Grammar();
+
+            var x = g.Parse(input);
+
+            Assert.True(x is Ok<IEnumerable<TopLevel>>);
+        }
+
         [Fact]
         public void Test1()
         {
             var n = new Noise(17);
 
-            var input = string.Join("\n", GenTopLevel(3).OneOrMore().Gen(n).Select(tl => tl.Display()).ToArray());
+            var input = GenTopLevel(3).Gen(n).Display();
+
+            //var input = string.Join("\n", GenTopLevel(3).OneOrMore().Gen(n).Select(tl => tl.Display()).ToArray());
 
             var g = new Grammar();
 
