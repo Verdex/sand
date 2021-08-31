@@ -5,9 +5,12 @@ using Xunit;
 using Xunit.Abstractions;
 
 using test.TestUtil;
+using static test.Parsing.GenAst;
 
 using sand.Parsing;
+using static sand.Parsing.Displayer;
 using sand.Util;
+
 
 namespace test.Parsing
 {
@@ -24,7 +27,10 @@ namespace test.Parsing
         {
             var n = new Noise(17);
 
-            //_output.WriteLine(GenAst.GenConstructorId().Gen(n));
+            foreach (var f in GenTopLevel().OneOrMore().Gen(n)) {
+
+                _output.WriteLine(f.Display());
+            }
 
             var g = new Grammar();
 
