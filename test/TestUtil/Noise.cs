@@ -39,7 +39,7 @@ namespace test.TestUtil {
     }
 
     public static class NoiseGeneratorEx {
-        private const ulong Length = 7;
+        private const ulong Length = 3;
 
         public static NoiseGenerator<B> Select<A, B>(this NoiseGenerator<A> gen, Func<A, B> map)
             => new NoiseGenerator<B>(noise => map(gen.Gen(noise)));

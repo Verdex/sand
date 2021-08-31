@@ -27,7 +27,7 @@ namespace test.Parsing
         {
             var n = new Noise(17);
 
-            foreach (var f in GenTopLevel().OneOrMore().Gen(n)) {
+            foreach (var f in GenTopLevel(3).OneOrMore().Gen(n)) {
 
                 _output.WriteLine(f.Display());
             }
