@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using Xunit;
@@ -27,31 +28,28 @@ namespace test.Parsing
         {
             var n = new Noise(17);
 
-            foreach (var f in GenTopLevel(3).OneOrMore().Gen(n)) {
-
-                _output.WriteLine(f.Display());
-            }
+            var input = string.Join("\n", GenTopLevel(3).OneOrMore().Gen(n).Select(tl => tl.Display()).ToArray());
 
             var g = new Grammar();
 
-            Assert.False(true);
-
-            var x = g.Parse("");
+            var x = g.Parse(input);
 
             switch (x) {
                 case Ok<IEnumerable<TopLevel>> o: 
                     foreach(var w in o.Item) {
-                        Console.WriteLine(Displayer.Display(w));
-                        Console.WriteLine("\n");
+                        _output.WriteLine(Displayer.Display(w));
+                        _output.WriteLine("\n");
                     }
                     break;
                 case Err<IEnumerable<TopLevel>> e: 
-                    Console.WriteLine($"{e.Error.Report()}");
+                    _output.WriteLine($"{e.Error.Report()}");
                     break;
                 default : 
-                    Console.WriteLine("Default?");
+                    _output.WriteLine("Default?");
                     break;
             }
+
+            Assert.False(true);
         }
     }
 }
