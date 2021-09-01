@@ -13,10 +13,8 @@ using static sand.Parsing.Displayer;
 using sand.Util;
 
 
-namespace test.Parsing
-{
-    public class GrammarTests 
-    {
+namespace test.Parsing{
+    public class GrammarTests {
         private readonly ITestOutputHelper _output;
 
         public GrammarTests(ITestOutputHelper output) {
@@ -32,43 +30,64 @@ namespace test.Parsing
         [InlineData("let x = | w, y | ();")]
         [InlineData("let x = | w : (a, b) | ();")]
         [InlineData("let x = | w : (a, b), xyz | ();")]
-        public void ShouldHandleSingleTopLevelItem(string input) {
+        public void ShouldParseSingleTopLevelItem(string input) {
             var g = new Grammar();
 
-            var x = g.Parse(input);
+            var ast = g.Parse(input);
 
-            Assert.True(x is Ok<IEnumerable<TopLevel>>);
+            Assert.True(ast is Ok<IEnumerable<TopLevel>>);
+        }
+
+        [Theory]
+        [InlineData(637660367133469093)]
+        [InlineData(637660368893334849)]
+        public void ShouldParseKnownProblematicSeed(ulong seed) {
+            var g = new Grammar();
+
+            var n = new Noise(seed);
+
+            var input = string.Join("\n", GenTopLevel(3).OneOrMore().Gen(n).Select(tl => tl.Display()).ToArray());
+
+            var ast = g.Parse(input);
+
+            Assert.True(ast is Ok<IEnumerable<TopLevel>>, $"Encountered parse failure from seed {seed}");
+
+            switch(ast) {
+                case Ok<IEnumerable<TopLevel>> o: 
+                    var output = string.Join("\n", o.Item.Select( tl => tl.Display() ).ToArray());
+                    Assert.True(input == output, $"Gen->Parse->Display failed at seed {seed}");
+                    break;
+                default:
+                    Assert.True(false, $"ast somehow failed at seed {seed}");
+                    break;
+            }
         }
 
         [Fact]
-        public void Test1()
-        {
-            var n = new Noise(17);
-
-            var input = GenTopLevel(3).Gen(n).Display();
-
-            //var input = string.Join("\n", GenTopLevel(3).OneOrMore().Gen(n).Select(tl => tl.Display()).ToArray());
-
+        public void ShouldParseRandomProgram() {
             var g = new Grammar();
 
-            var x = g.Parse(input);
+            var initial = new Noise((ulong)DateTime.Now.Ticks);
 
-            switch (x) {
-                case Ok<IEnumerable<TopLevel>> o: 
-                    foreach(var w in o.Item) {
-                        _output.WriteLine(Displayer.Display(w));
-                        _output.WriteLine("\n");
-                    }
-                    break;
-                case Err<IEnumerable<TopLevel>> e: 
-                    _output.WriteLine($"{e.Error.Report()}");
-                    break;
-                default : 
-                    _output.WriteLine("Default?");
-                    break;
+            foreach( ulong seed in Enumerable.Range(0, 50).Select(_ => { initial = initial.Next(); return initial.Any(); }) ) {
+                var n = new Noise(seed);
+
+                var input = string.Join("\n", GenTopLevel(3).OneOrMore().Gen(n).Select(tl => tl.Display()).ToArray());
+
+                var ast = g.Parse(input);
+
+                Assert.True(ast is Ok<IEnumerable<TopLevel>>, $"Encountered parse failure from seed {seed}");
+
+                switch(ast) {
+                    case Ok<IEnumerable<TopLevel>> o: 
+                        var output = string.Join("\n", o.Item.Select( tl => tl.Display() ).ToArray());
+                        Assert.True(input == output, $"Gen->Parse->Display failed at seed {seed}");
+                        break;
+                    default:
+                        Assert.True(false, $"ast somehow failed at seed {seed}");
+                        break;
+                }
             }
-
-            Assert.False(true);
         }
     }
 }
