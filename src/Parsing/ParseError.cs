@@ -1,9 +1,17 @@
 
+using System.Collections.Generic;
 using System.Linq;
 
 using sand.Util;
 
 namespace sand.Parsing {
+    public class AggregateError : Error { 
+        public IEnumerable<Error> Errors { get; }
+        public AggregateError(IEnumerable<Error> errors) {
+            Errors = errors;
+        }
+        public string Report() => string.Join("\n", Errors.Select(e => e.Report()).ToArray());
+    }
     public class EndOfFileError : Error { 
         public string Report() => "Encountered unexpected end of file";
     }

@@ -50,6 +50,25 @@ namespace sand.Parsing {
         public static Parser<string> Expect(string s) 
             => new Parser<string>(input => input.Expect(s));
 
+        public static Parser<T> Or<T>(params Parser<T>[] parsers ) 
+            => new Parser<T>( input => {
+                var errors = new List<Error>();
+                foreach (var parser in parsers) {
+                    var rp = input.CreateRestore();
+                    switch (parser.Parse(input)) {
+                        case Ok<T> o: 
+                            return o;
+                        case Err<T> e:
+                            errors.Add(e.Error);
+                            input.Restore(rp);
+                            break;
+                        default:
+                            throw new Exception("Or unexpected Result case");
+                    }
+                } 
+                return Err<T>(new AggregateError(errors));
+            });
+
         public static Parser<T> Or<T>( this Parser<T> target, Parser<T> other ) 
             => new Parser<T>( input => {
                 var rp = input.CreateRestore();
