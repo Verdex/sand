@@ -82,7 +82,7 @@ namespace sand.Parsing {
         public Result<IEnumerable<TopLevel>> Parse(string s) {
             var input = new Input(s);
 
-            var p = TypeDefineParser().Or(LetStatementParser()).ZeroOrMore();
+            var p = Or(TypeDefineParser(), LetStatementParser()).ZeroOrMore();
 
             switch (p.Parse(input)) {
                 case Ok<IEnumerable<TopLevel>> o: 
@@ -316,7 +316,7 @@ namespace sand.Parsing {
                     // which I want to be able to call in case you put a 
                     // lambda or a match in there or a let that returns
                     // a lambda or whatever
-                    => TupleExprParser().Or(VarParser());
+                    => Or(TupleExprParser(), VarParser());
 
                 return from e in Callables()
                        from lp in LParen()
@@ -325,16 +325,17 @@ namespace sand.Parsing {
                        select new CallExpr(e, parameters) as Expr;
             }
 
-            return Call()
-                    .Or(TupleExprParser())
-                    .Or(MatchExprParser())
-                    .Or(IntegerParser())
-                    .Or(StrParser())
-                    .Or(BoolParser())
-                    .Or(LetExprParser())
-                    .Or(ConstructorExprParser())
-                    .Or(LambdaExprParser())
-                    .Or(VarParser());
+            return Or( Call()
+                     , TupleExprParser()
+                     , MatchExprParser()
+                     , IntegerParser()
+                     , StrParser()
+                     , BoolParser()
+                     , LetExprParser()
+                     , ConstructorExprParser()
+                     , LambdaExprParser()
+                     , VarParser()
+                     );
         }
 
         private Parser<Pattern> PatternParser() {
@@ -388,14 +389,15 @@ namespace sand.Parsing {
                    from t in TypeParser().Trim()
                    select new ArrowType(s, t) as SType;
 
-            return ArrowCombinator(Index())
-                    .Or(ArrowCombinator(TupleType()))
-                    .Or(ArrowCombinator(SimpleType()))
-                    .Or(ArrowCombinator(GenericType()))
-                    .Or(TupleType())
-                    .Or(Index())
-                    .Or(SimpleType())
-                    .Or(GenericType());
+            return Or( ArrowCombinator(Index())
+                     , ArrowCombinator(TupleType())
+                     , ArrowCombinator(SimpleType())
+                     , ArrowCombinator(GenericType())
+                     , TupleType()
+                     , Index()
+                     , SimpleType()
+                     , GenericType()
+                     );
         }
     }
 }
