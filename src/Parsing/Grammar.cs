@@ -82,18 +82,17 @@ namespace sand.Parsing {
         public Result<IEnumerable<TopLevel>> Parse(string s) {
             var input = new Input(s);
 
-            var p = Or(TypeDefineParser(), LetStatementParser()).ZeroOrMore();
+            var tl = Or(TypeDefineParser(), LetStatementParser());
+            var p = tl.ZeroOrMore();
 
             switch (p.Parse(input)) {
                 case Ok<IEnumerable<TopLevel>> o: 
-                    switch (Any().Parse(input)) {
+                    switch (Peek().Parse(input)) {
                         case Ok<char> o2: 
-                            return new Err<IEnumerable<TopLevel>>(
-                                new ParseError( $"Expected end of file but found {o2.Item}"
-                                              , input.Index
-                                              , input.Index
-                                              , input.Text
-                                              ));
+                            return tl.Parse(input) switch {
+                                Err<TopLevel> e => Err<IEnumerable<TopLevel>>(e.Error),
+                                _ => throw new Exception("Unexpected tl parse case"),
+                            };
                         case Err<char> e: return o;
                         default : throw new Exception("Unexpected Result case");
                     }
@@ -116,7 +115,7 @@ namespace sand.Parsing {
                        from rp in RParen()
                        select new DefineConstructor(id, ps);
 
-                return Paramed().Or(Empty());
+                return Or(Paramed(), Empty());
             }
 
             return from t in Type()
@@ -284,7 +283,7 @@ namespace sand.Parsing {
                    where char.IsUpper(id[0])
                    select new ConstructorExpr(id, new Expr[0]) as Expr;
 
-            return ParamConstructor().Or(EmptyConstructor()); 
+            return Or(ParamConstructor(), EmptyConstructor()); 
         }
 
         private Parser<Expr> TupleExprParser() 
@@ -352,7 +351,11 @@ namespace sand.Parsing {
             Parser<Pattern> EmptyConstructor() 
                 => ConstructorIdParser().Select( id => new ConstructorPattern(id, new Pattern[0]) as Pattern);
                 
-            return WildCardParser().Or(VariableParser()).Or(ParamConstructor()).Or(EmptyConstructor());
+            return Or( WildCardParser()
+                     , VariableParser()
+                     , ParamConstructor()
+                     , EmptyConstructor()
+                     );
         }
 
         private Parser<SType> TypeParser() {
