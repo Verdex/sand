@@ -27,6 +27,19 @@ namespace sand.Parsing {
                 }
             });
 
+        public static Parser<T> Warn<T>(this Parser<T> target)  {
+            static Error Set(Error e) {
+                e.Priority = Importance.High;
+                return e;
+            }
+            return new Parser<T>(input => 
+                target.Parse(input) switch {
+                    Ok<T> o => o,
+                    Err<T> e => Err<T>(Set(e.Error)),
+                    _ => throw new Exception("Unexpected Result case"),
+                });
+        }
+
         public static Parser<char> Any() 
             => new Parser<char>(input => input.GetChar() switch {
                 Some<char> c => Ok(c.Item),
