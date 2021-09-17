@@ -6,6 +6,7 @@ using sand.Util;
 
 namespace sand.Parsing {
     public class AggregateError : Error { 
+        public Importance Priority() => Importance.Low;
         public IEnumerable<Error> Errors { get; }
         public AggregateError(IEnumerable<Error> errors) {
             Errors = errors;
@@ -13,6 +14,7 @@ namespace sand.Parsing {
         public string Report() => string.Join("\n", Errors.Select(e => e.Report()).ToArray());
     }
     public class EndOfFileError : Error { 
+        public Importance Priority() => Importance.Low;
         public string Report() => "Encountered unexpected end of file";
     }
     public class ParseError : Error {
@@ -20,11 +22,17 @@ namespace sand.Parsing {
         private readonly int _start;
         private readonly int _end;
         private readonly string _text;
-        public ParseError(string message, int start, int end, string text) {
+
+        private readonly Importance _priority;
+
+        public Importance Priority() => _priority;
+
+        public ParseError(string message, int start, int end, string text, Importance priority = Importance.Low) {
             _message = message;
             _start = start;
             _end = end;
             _text = text;
+            _priority = priority;
         }
         public string Report() {
             static bool EndLine(char c) => c == '\n' || c == '\r';
