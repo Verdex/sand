@@ -12,7 +12,7 @@ namespace sand
 {
     class Program
     {
-        private static List<Error> FindImportant(AggregateError error) {
+        private static IEnumerable<Error> FindImportant(AggregateError error) {
             static IEnumerable<Error> Flat(Error error) =>
                 error switch {
                     AggregateError ag => ag.Errors.SelectMany(Flat).Prepend(ag),
@@ -20,7 +20,7 @@ namespace sand
                     _ => throw new Exception("Unexpected error type"),
                 };
 
-            return Flat(error).Where(e => e.Priority() == Importance.High).ToList();
+            return Flat(error).Where(e => e.Priority() == Importance.High);
         }
 
         static void Main(string[] args)
@@ -76,7 +76,10 @@ let b2 = false;
                 case Err<IEnumerable<TopLevel>> e: 
                     switch(e.Error) {
                         case AggregateError ag:
-                            Console.WriteLine("blarg");
+                            Console.WriteLine("Aggregate Error");
+                            foreach(var importantError in FindImportant(ag)) {
+                                Console.WriteLine("${importantError.Report()}");
+                            }
                             break;
                         case Error err:
                             Console.WriteLine($"{e.Error.Report()}");
