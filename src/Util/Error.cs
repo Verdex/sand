@@ -4,7 +4,7 @@ namespace sand.Util {
         Low,
     }
     public interface Error { 
-        Importance Priority();
+        Importance Priority { get; set; }
         string Report();
     }
 }

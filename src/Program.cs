@@ -20,7 +20,7 @@ namespace sand
                     _ => throw new Exception("Unexpected error type"),
                 };
 
-            return Flat(error).Where(e => e.Priority() == Importance.High);
+            return Flat(error).Where(e => e.Priority == Importance.High);
         }
 
         static void Main(string[] args)
