@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using sand.Parsing;
@@ -11,6 +12,17 @@ namespace sand
 {
     class Program
     {
+        private static List<Error> FindImportant(AggregateError error) {
+            static IEnumerable<Error> Flat(Error error) =>
+                error switch {
+                    AggregateError ag => ag.Errors.SelectMany(Flat).Prepend(ag),
+                    Error e => new [] { e },
+                    _ => throw new Exception("Unexpected error type"),
+                };
+
+            return Flat(error).Where(e => e.Priority() == Importance.High).ToList();
+        }
+
         static void Main(string[] args)
         {
             var g = new Grammar();
@@ -62,7 +74,17 @@ let b2 = false;
                     }
                     break;
                 case Err<IEnumerable<TopLevel>> e: 
-                    Console.WriteLine($"{e.Error.Report()}");
+                    switch(e.Error) {
+                        case AggregateError ag:
+                            Console.WriteLine("blarg");
+                            break;
+                        case Error err:
+                            Console.WriteLine($"{e.Error.Report()}");
+                            break;
+                        default:
+                            Console.WriteLine("unknown error type");
+                            break;
+                    }
                     break;
                 default : 
                     Console.WriteLine("Default?");
